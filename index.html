@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Botanic Bot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta http-equiv="refresh" content="10">
+
+	<!--link rel="stylesheet/less" href="less/bootstrap.less" type="text/css" /-->
+	<!--link rel="stylesheet/less" href="less/responsive.less" type="text/css" /-->
+	<!--script src="js/less-1.3.3.min.js"></script-->
+	<!--append ‘#!watch’ to the browser URL, then refresh the page. -->
+	
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/style.css" rel="stylesheet">
+
+  <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+  <!--[if lt IE 9]>
+    <script src="js/html5shiv.js"></script>
+  <![endif]-->
+
+  <!-- Fav and touch icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="img/apple-touch-icon-144.png">
+  <link rel="apple-touch-icon-precomposed" sizes="114x114" href="img/apple-touch-icon-114.png">
+  <link rel="apple-touch-icon-precomposed" sizes="72x72" href="img/apple-touch-icon-72.png">
+  <link rel="apple-touch-icon-precomposed" href="img/apple-touch-icon-57.png">
+  <link rel="shortcut icon" href="img/favicon.png">
+  
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="js/scripts.js"></script>
+</head>
+
+<body onLoad="EstadoActual()">
+
+<% if (!user) { alert("pico"); %>
+  <h2>Quien eres??  <a href="/auth/twitter"><img src="img/sign-in-with-twitter-l.png" width="151" height="24"></a> </h2>
+<% } else { %>
+  <h2>Hola, <%= user.username %>.</h2>
+<% } %>
+<div class="container">
+	<div class="row clearfix">
+		<div class="col-md-12 column">
+      
+			<h3 class="text-center text-primary">
+				BotanicBot: Panel de Control Bomba Riego
+			</h3> 
+      <div class="panel panel-default">
+      <h3 class="text-center text-primary">
+        Estado Bomba: <label id="lblEstado" text=""/> <br>
+      </h3> 
+      <h3 class="text-center text-primary">
+      Tiempo Encendido: <label id="lblTiempo" text="" />
+      </h3>
+    </div>    
+    
+      <div class="panel panel-default">
+      <div class="text-center text-primary">
+      Fecha Ultimo Riego: <label id="lblFechaUltimoRiego" text=""/> <br>
+    </div>
+      <div class="text-center text-primary">
+      Tiempo Ultimo Riego: <label id="lblTiempoUltimoRiego" text=""/> <br>
+      </div>
+</div>
+			<button type="button" class="btn btn-primary btn-lg btn-block" id="botonActivar" onclick="Encender();">Activar</button> 
+			<button type="button" class="btn btn-block btn-lg btn-warning" id="botonDesactivar" onClick="Apagar();">Desactivar</button>
+      <br>
+      <br>
+      <!--
+      <div class="btn-toolbar" role="toolbar">
+
+        <div class="btn-group">
+          
+          <button type="button" class="btn btn-lg btn-default" onclick="Programacion();">Ver Programacion
+            <span class="glyphicon glyphicon-calendar"></span>
+          </button>
+        </div>
+        <div class="btn-group">
+          <button type="button" class="btn btn-default btn-lg" onclick="Logs();">Ver Logs
+            <span class="glyphicon glyphicon-list"></span>
+          </button>
+        
+        </div>
+      </div>
+      <div id="panel" class="table-responsive" hidden><table id="tabla" class="table table-striped"></div>
+-->
+
+		</div>
+	</div>
+</div>
+</body>
+</html>

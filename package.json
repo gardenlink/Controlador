@@ -1,0 +1,49 @@
+{
+  "name": "BotanicBot",
+  "version": "0.0.1",
+  "dependencies": {
+    "apidoc": "0.12.1",
+    "async": "^1.4.2",
+    "ejs": ">= 0.0.0",
+    "express": "3.x",
+    "later": "1.1.6",
+    "moment": "2.9.0",
+    "mongodb": "2.0.25",
+    "mongoose": "4.0.1",
+    "nedb": "^1.2.1",
+    "node-dweetio": "0.0.11",
+    "node-twitterbot": "0.2.2",
+    "nodemailer": "0.7.1",
+    "passport": ">= 0.0.0",
+    "passport-twitter": "1.0.3",
+    "ping": "^0.1.10",
+    "plotly": "1.0.2",
+    "restler": "3.2.2",
+    "serialport": "1.7.4",
+    "serve-static": "1.9.2",
+    "winston": "0.9.0"
+  },
+  "apidoc": {
+    "title": "BotanicBot",
+    "url": "https://github.com/Botanicbot/App.git"
+  },
+  "scripts": {
+    "start": "node BotanicBot.js release"
+  },
+  "description": "Sistema de control de riego por goteo utilizando Raspberry y Arduino",
+  "main": "BotanicBot.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "keywords": [
+    "Riego",
+    "Huerta",
+    "Planta"
+  ],
+  "author": "Diego Navarro M.",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/Botanicbot/App.git"
+  }
+}

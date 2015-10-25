@@ -1,0 +1,77 @@
+{
+	"version": 1,
+	"allow_edit": true,
+	"plugins": [],
+	"panes": [
+		{
+			"width": 1,
+			"row": {
+				"3": 1,
+				"4": 1
+			},
+			"col": {
+				"3": 1,
+				"4": 2
+			},
+			"col_width": 1,
+			"widgets": [
+				{
+					"type": "indicator",
+					"settings": {
+						"title": "Bomba 1",
+						"value": "datasources[\"Bomba1_dw\"][\"Encendida\"]==true",
+						"on_text": "ENCENDIDA",
+						"off_text": "APAGADA"
+					}
+				},
+				{
+					"type": "indicator",
+					"settings": {
+						"title": "BOMBA 2",
+						"value": "datasources[\"Bomba2_dw\"][\"Encendida\"]==true",
+						"on_text": "ENCENDIDA",
+						"off_text": "APAGADA"
+					}
+				}
+			]
+		},
+		{
+			"width": 1,
+			"row": {
+				"3": 1,
+				"4": 1
+			},
+			"col": {
+				"3": 2,
+				"4": 1
+			},
+			"col_width": 1,
+			"widgets": []
+		}
+	],
+	"datasources": [
+		{
+			"name": "Sensor2_dw",
+			"type": "dweet_io",
+			"settings": {
+				"thing_id": "bb_njs_sensor_2",
+				"name": "Sensor2_dw"
+			}
+		},
+		{
+			"name": "Bomba1_dw",
+			"type": "dweet_io",
+			"settings": {
+				"thing_id": "bb_njs_relay_1"
+			}
+		},
+		{
+			"name": "Bomba2_dw",
+			"type": "dweet_io",
+			"settings": {
+				"thing_id": "bb_njs_relay_2"
+			}
+		}
+	],
+	"columns": 3
+}

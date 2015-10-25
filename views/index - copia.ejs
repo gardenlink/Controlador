@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Botanic Bot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="">
+  <meta name="author" content="">
+  <meta http-equiv="refresh" content="10">
+
+	<!--link rel="stylesheet/less" href="less/bootstrap.less" type="text/css" /-->
+	<!--link rel="stylesheet/less" href="less/responsive.less" type="text/css" /-->
+	<!--script src="js/less-1.3.3.min.js"></script-->
+	<!--append ‘#!watch’ to the browser URL, then refresh the page. -->
+	
+	<link href="css/bootstrap.min.css" rel="stylesheet">
+	<link href="css/style.css" rel="stylesheet">
+
+  <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+  <!--[if lt IE 9]>
+    <script src="js/html5shiv.js"></script>
+  <![endif]-->
+
+  <!-- Fav and touch icons -->
+  <link rel="apple-touch-icon-precomposed" sizes="144x144" href="img/apple-touch-icon-144.png">
+  <link rel="apple-touch-icon-precomposed" sizes="114x114" href="img/apple-touch-icon-114.png">
+  <link rel="apple-touch-icon-precomposed" sizes="72x72" href="img/apple-touch-icon-72.png">
+  <link rel="apple-touch-icon-precomposed" href="img/apple-touch-icon-57.png">
+  <link rel="shortcut icon" href="img/favicon.png">
+  
+	<script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="js/scripts.js"></script>
+</head>
+
+
+
+<body onLoad="EstadoActual()">
+
+
+<nav class="navbar navbar-default">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">BotanicBot</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#">Control <span class="sr-only">(current)</span></a></li>
+        <li><a href="/logs" target="_blank">Logs</a></li>
+        <li><a href="/graficos" target="_blank">Monitor Salud</a></li>
+        <!--
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">Dropdown <span class="caret"></span></a>
+          <ul class="dropdown-menu" role="menu">
+            <li><a href="#">Estadisticas</a></li>
+            <li><a href="#">Logs</a></li>
+            <li class="divider"></li>
+            <li><a href="#">Administracion</a></li>
+            !-->
+          </ul>
+        </li>
+      </ul>
+      <!--
+      <form class="navbar-form navbar-left" role="search">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search">
+        </div>
+        <button type="submit" class="btn btn-default">Submit</button>
+      </form>
+    -->
+      <ul class="nav navbar-nav navbar-right">
+         <% if (!user) { 
+          %>
+          <a href="/auth/twitter" ></li><img src="img/sign-in-with-twitter-l.png" width="151" height="24"></a>
+<% } else { %>
+  Hola, <%= user.username %>
+<% } %>
+      </ul>
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+
+</nav>
+
+<!-- Mostrar estado bomba -->
+  <div class="panel panel-default">
+
+      <h3 class="text-center text-primary">
+        Estado Bomba: <label id="lblEstado" text=""/> <br>
+      </h3> 
+      <h3 class="text-center text-primary">
+      Tiempo Encendido: <label id="lblTiempo" text="" /><br>
+      </h3>
+   
+      <div class="text-center text-primary">
+      Fecha Ultimo Riego: <label id="lblFechaUltimoRiego" text=""/> <br>
+    </div>
+      <div class="text-center text-primary">
+      Tiempo Ultimo Riego: <label id="lblTiempoUltimoRiego" text=""/> <br>
+      </div>
+</div>
+
+<button class="btn btn-success"><i class="icon-ok icon-white"></i> On</button>
+
+
+  <button type="button" class="btn btn-primary btn-lg btn-block" id="botonActivar" onclick="Encender();"><span class="glyphicon glyphicon-tint" aria-hidden="true"></span>               Activar</button> 
+  <button type="button" class="btn btn-block btn-lg btn-warning" id="botonDesactivar" onClick="Apagar();"><span class="glyphicon glyphicon-off" aria-hidden="true"></span>               Desactivar</button>
+
+<!--
+<div>
+    <a href="https://plot.ly/~Dreamshot/212/" target="_blank" title="Public Transport Use in North America" style="display: block; text-align: center;"><img src="https://plot.ly/~Dreamshot/212.png" alt="Public Transport Use in North America" style="max-width: 100%;width: 750px;"  width="750" onerror="this.onerror=null;this.src='https://plot.ly/404.png';" /></a>
+    <script data-plotly="Dreamshot:212" src="https://plot.ly/embed.js" async></script>
+</div>
+-->
+
+
+</body>
+</html>
