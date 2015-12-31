@@ -7,10 +7,11 @@
     "ejs": ">= 0.0.0",
     "express": "3.x",
     "later": "1.1.6",
+    "mocha": "^2.3.4",
     "moment": "2.9.0",
     "mongodb": "2.0.25",
     "mongoose": "4.0.1",
-    "nedb": "^1.2.1",
+    "nedb": "^1.5.0",
     "node-dweetio": "0.0.11",
     "node-twitterbot": "0.2.2",
     "nodemailer": "0.7.1",
@@ -21,6 +22,7 @@
     "restler": "3.2.2",
     "serialport": "1.7.4",
     "serve-static": "1.9.2",
+    "unit.js": "^2.0.0",
     "winston": "0.9.0"
   },
   "apidoc": {
@@ -28,7 +30,8 @@
     "url": "https://github.com/Botanicbot/App.git"
   },
   "scripts": {
-    "start": "node BotanicBot.js release"
+    "start": "node BotanicBot.js release",
+	"test": "mocha test"
   },
   "description": "Sistema de control de riego por goteo utilizando Raspberry y Arduino",
   "main": "BotanicBot.js",

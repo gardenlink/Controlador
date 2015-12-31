@@ -170,11 +170,30 @@ console.log("Autenticacion Twitter : " + config.twitter_autenticacion);
 logger.info("Publicacion Twitter : " + config.twitter_enabled);
 logger.info("Autenticacion Twitter : " + config.twitter_autenticacion);
 
+
+//Base de datos
+console.log("Configurando Base de Datos");
+logger.info("Configurando Base de Datos");
+
+//var SensorProvider = require('./lib/dao/SensorProvider.js');
+//var sensorProvider = new SensorProvider(logger, moment, config);
+
+//var BombaProvider = require('./lib/dao/BombaProvider.js');
+//var bombaProvider = new BombaProvider(logger, moment, config);
+
+var DataProvider = require('./lib/dao/DataProvider.js');
+var dataProvider = new DataProvider(logger, config, null);
+
+//var ConnectionPool = require('./lib/dao/ConnectionPool.js');
+//var conexiones = new ConnectionPool(logger, config);
+
+//var dataProvider = conexiones.Dweet();
+
 /* TEMPORIZADOR */
 console.log("Configurando Temporizador...");
 logger.info("Configurando Temporizador...")
 var Temporizador = require("./lib/Temporizador.js");
-var tareas = new Temporizador(config, logger, mailer,tweet,dispositivos);
+var tareas = new Temporizador(config, logger, mailer,tweet,dispositivos,dataProvider);
 tareas.Iniciar();
 console.log("Fin Configuracion Temporizador...");
 logger.info("Fin Configuracion Temporizador..."); 
@@ -184,7 +203,7 @@ logger.info("Fin Configuracion Temporizador...");
 console.log("Configurando Modulo de Monitorizacion de Salud...");
 logger.info("Configurando Modulo de Monitorizacion de Salud...")
 var MonitorSalud = require("./lib/MonitorSalud.js");
-var monitor = new MonitorSalud(config, logger, mailer,moment,tweet,dispositivos);
+var monitor = new MonitorSalud(config, logger, mailer,moment,tweet,dispositivos, dataProvider);
 monitor.Iniciar();
 console.log("Fin Configuracion Modulo Monitorizacion de Salud...");
 logger.info("Fin Configuracion Modulo Monitorizacion de Salud...");
@@ -211,15 +230,6 @@ app.configure(function() {
   app.use(express.static(__dirname + '/public'));
 });
 
-//Base de datos
-console.log("Configurando Base de Datos");
-logger.info("Configurando Base de Datos");
-
-var SensorProvider = require('./lib/dao/SensorProvider.js');
-var sensorProvider = new SensorProvider(logger, moment, config);
-
-var BombaProvider = require('./lib/dao/BombaProvider.js');
-var bombaProvider = new BombaProvider(logger, moment, config);
 
 
 //Graficos
@@ -234,7 +244,7 @@ logger.info("Preparando Rutas de aplicacion..");
 
 console.log("./routes/Bomba");
 logger.info("./routes/Bomba");
-require('./routes/Bomba.js')(app, req, moment, logger, dispositivos,bombaProvider);
+require('./routes/Bomba.js')(app, req, moment, logger, dispositivos,dataProvider);
 
 console.log("./routes/Sensor");
 logger.info("./routes/Sensor");
@@ -242,7 +252,7 @@ require('./routes/Sensor.js')(app, req, moment, logger, dispositivos);
 
 console.log("./routes/Monitor");
 logger.info("./routes/Monitor");
-require('./routes/Monitor.js')(app,moment,sensorProvider,graficos);
+require('./routes/Monitor.js')(app,moment,dataProvider,logger, graficos);
 
 
 require('./routes/FBoardViews')(app);
@@ -255,6 +265,9 @@ console.log("./routes/Log");
 logger.info("./routes/Log");
 require('./routes/Log')(app, auxiliares, logger, tareas,fs, _dirname);
 
+console.log("./routes/Dispositivo");
+logger.info("./routes/Dispositivo");
+require('./routes/Dispositivo')(app,moment,dataProvider,logger);
 
 console.log("Inicializando Actuadores..");
 var BombaService = require("./lib/servicios/BombaService.js");
@@ -273,13 +286,13 @@ logger.info("Fin Configuracion ...");
 
 /************************** END CONFIG ********************************/
 
-var Camaras = require("./lib/util/Camaras.js");
-var camara = new Camaras(config,logger);
-
+//var Camaras = require("./lib/util/Camaras.js");
+//var camara = new Camaras(config,logger);
+/*
 camara.GetStreamUri(function (data) {
   console.log(data);
 });
-
+*/
 
 app.listen(appPort); 
 console.log('Servidor corriendo en: http://'+IPAddress+':'+appPort+'/');

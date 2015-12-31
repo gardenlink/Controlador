@@ -1,4 +1,4 @@
-module.exports = function(app, req, moment, logger, dispositivos, bombaProvider) {
+module.exports = function(app, req, moment, logger, dispositivos, dataProvider) {
 
 
   /* REGISTRO DE TIEMPO */
@@ -77,7 +77,7 @@ app.get('/bomba/:id', function (request, response) {
 
               valor = 255;
             }
-            bombaProvider.Save(idBomba, valor,TiempoTotal,TiempoInicial);
+            dataProvider.Bomba().Save(idBomba, valor,TiempoTotal,TiempoInicial);
             
             data["TiempoEncendida"] = TiempoTotal;
             data["UltimoRiegoFecha"] = UltimoRiegoFecha;
@@ -138,7 +138,7 @@ app.get('/activarBomba/:id', function (request, response) {
             UltimoRiegoFecha = new Date();
             }
 
-            bombaProvider.Save(idBomba, 255, 0,TiempoInicial);
+            dataProvider.Bomba().Save(idBomba, 255, 0,TiempoInicial);
 
 
             response.end();
@@ -193,7 +193,7 @@ app.get('/desactivarBomba/:id', function (request, response) {
         TiempoInicial = 0;
         TiempoTotal = 0;
 
-        bombaProvider.Save(idBomba, 0,UltimoRiegoTiempo,TiempoInicial);
+        dataProvider.Bomba().Save(idBomba, 0,UltimoRiegoTiempo,TiempoInicial);
         response.end();
         }
         });
