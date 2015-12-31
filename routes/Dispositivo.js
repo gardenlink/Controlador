@@ -88,6 +88,10 @@ app.get('/Dispositivo/ConsultarEstado/:id', function (request, response) {
         console.log(data);
         response.json(data);
       }
+      else
+      {
+        response.json("No existen dispositivos");
+      }
     });
 });
 

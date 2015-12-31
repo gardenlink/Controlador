@@ -175,19 +175,13 @@ logger.info("Autenticacion Twitter : " + config.twitter_autenticacion);
 console.log("Configurando Base de Datos");
 logger.info("Configurando Base de Datos");
 
-//var SensorProvider = require('./lib/dao/SensorProvider.js');
-//var sensorProvider = new SensorProvider(logger, moment, config);
-
-//var BombaProvider = require('./lib/dao/BombaProvider.js');
-//var bombaProvider = new BombaProvider(logger, moment, config);
-
 var DataProvider = require('./lib/dao/DataProvider.js');
 var dataProvider = new DataProvider(logger, config, null);
 
-//var ConnectionPool = require('./lib/dao/ConnectionPool.js');
-//var conexiones = new ConnectionPool(logger, config);
+var DbSync = require('./lib/DbSync.js');
+var dbSync = new DbSync(dataProvider, logger, mailer, moment);
+dbSync.Iniciar();
 
-//var dataProvider = conexiones.Dweet();
 
 /* TEMPORIZADOR */
 console.log("Configurando Temporizador...");
