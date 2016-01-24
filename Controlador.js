@@ -126,7 +126,7 @@ for (var dispositivo in dispositivos) {
   console.log(" IP: " + dispositivos[dispositivo].ip);  
   console.log(" PUERTO: " + dispositivos[dispositivo].puerto);  
   console.log(" HABILITADO: " + dispositivos[dispositivo].habilitado);  
-
+  console.log(" FRECUENCIA MUESTREO: " + dispositivos[dispositivo].FrecuenciaMuestreo);
 
 
 }
@@ -178,9 +178,6 @@ logger.info("Configurando Base de Datos");
 var DataProvider = require('./lib/dao/DataProvider.js');
 var dataProvider = new DataProvider(logger, config, null);
 
-var DbSync = require('./lib/DbSync.js');
-var dbSync = new DbSync(dataProvider, logger, mailer, moment);
-dbSync.Iniciar();
 
 
 /* TEMPORIZADOR */
@@ -249,7 +246,7 @@ logger.info("./routes/Monitor");
 require('./routes/Monitor.js')(app,moment,dataProvider,logger, graficos);
 
 
-require('./routes/FBoardViews')(app);
+require('./routes/Panel')(app);
 
 console.log("./routes/Autenticacion");
 logger.info("./routes/Autenticacion");
@@ -263,6 +260,8 @@ console.log("./routes/Dispositivo");
 logger.info("./routes/Dispositivo");
 require('./routes/Dispositivo')(app,moment,dataProvider,logger);
 
+
+/*
 console.log("Inicializando Actuadores..");
 var BombaService = require("./lib/servicios/BombaService.js");
 var bombasvc = new BombaService(dispositivos,logger);
@@ -273,6 +272,38 @@ for (c in config.actuadores) {
       bombasvc.DesactivarBomba(config.actuadores[c].id, function(data) {});
   }
 }
+*/
+
+var ServiceProvider = require('./lib/servicios/ServiceProvider.js');
+var devices;
+ var filter =  {};
+
+
+//TODO: Usar Async
+
+
+
+
+var serviceProvider;
+dataProvider.Device().GetAll(function(error,docs){
+        if (error) 
+          console.log(error);
+        else
+          serviceProvider = new ServiceProvider(docs, logger);
+          serviceProvider.Motor("001").Estado(1,function(error, data) {console.log(data);});
+        });
+
+
+
+
+
+
+// serviceProvider.Bomba("002").GetEstadoBomba(1,
+//                                             function(data, err) { 
+//                                               console.log(data);
+//                                             }
+//                                           );
+
 
 
 console.log("Fin Configuracion ...");

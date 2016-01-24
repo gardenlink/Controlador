@@ -1,7 +1,3 @@
-{"Id":"001","Nombre":"ARDUINO_UNO_1","Tipo":"UNO","Ip":"192.168.100.100","Puerto":"80","Habilitado":"true","Estado":true,"_id":"Rkyj7PlP6c3cyoeH"}
-{"Id":"002","Nombre":"ARDUINO_VENTANAS_1","Tipo":"MEGA","Ip":"192.168.0.11","Puerto":"80","Habilitado":"true","Estado":false,"_id":"TxEYBB7BAGeFvQLl"}
+{"Id":"001","Nombre":"ARDUINO_BOMBAS_1","Tipo":"UNO","Ip":"192.168.100.100","Puerto":"80","Habilitado":"true","Estado":false,"FrecuenciaMuestreo":"120000","_id":"3OaCr1nSNZDHXHOe"}
+{"Id":"002","Nombre":"ARDUINO_VENTANAS_1","Tipo":"MEGA","Ip":"192.168.100.101","Puerto":"80","Habilitado":"false","Estado":false,"FrecuenciaMuestreo":"60000","_id":"dPvjCwioEgRw8GKZ"}
 {"$$indexCreated":{"fieldName":"Id","unique":true,"sparse":true}}
-{"Id":"001","Nombre":"ARDUINO_UNO_1","Tipo":"UNO","Ip":"192.168.100.100","Puerto":"80","Habilitado":"true","Estado":false,"_id":"Rkyj7PlP6c3cyoeH"}
-{"Id":"001","Nombre":"ARDUINO_UNO_1","Tipo":"UNO","Ip":"192.168.100.100","Puerto":"80","Habilitado":"true","Estado":false,"_id":"Rkyj7PlP6c3cyoeH"}
-{"Id":"001","Nombre":"ARDUINO_UNO_1","Tipo":"UNO","Ip":"192.168.100.100","Puerto":"80","Habilitado":"true","Estado":false,"_id":"Rkyj7PlP6c3cyoeH"}
-{"Id":"001","Nombre":"ARDUINO_UNO_1","Tipo":"UNO","Ip":"192.168.100.100","Puerto":"80","Habilitado":"true","Estado":false,"_id":"Rkyj7PlP6c3cyoeH"}

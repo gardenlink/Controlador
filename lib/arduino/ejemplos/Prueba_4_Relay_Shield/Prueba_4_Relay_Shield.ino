@@ -69,7 +69,7 @@ void setup() {
 void loop(){
 // Lectura de los optoacopladores
   estado1 = 0;//digitalRead(Opto1);
-  estado2 = 0;//digitalRead(Opto2);
+  estado2 = 1;//digitalRead(Opto2);
   estado3 = 0;//digitalRead(Opto3);
   estado4 = 0;//digitalRead(Opto4);
 

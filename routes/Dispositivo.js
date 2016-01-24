@@ -4,7 +4,7 @@ var ArestLibrary = require("../lib/Arduino/Arest.js");
 var arduinoService; 
 
 
-app.get('/Dispositivo/ObtenerPayload/:id', function (request, response) {
+app.get('/Dispositivo/Get/:id', function (request, response) {
     var dispositivo = request.params.id;
 
      var filter = {Id : String};
@@ -36,17 +36,17 @@ app.put('/Dispositivo/SubscribirDispositivo/:id', function (request, response) {
     var filter = {Id : String};
     filter.Id = id;
     
+
     dataProvider.Device().Find(filter, function(err, data) { 
       if (data.length > 0) {
         dataProvider.Device().Save(data[0].Id, data[0].Nombre, data[0].Tipo, ip,data[0].Puerto,data[0].Habilitado,true);
+        response.json(data);
+      }
+      else{
+        response.json("<>");
       }
     });
     
-    //dataProvider.Device().GetAll(function(err, data) {
-     // console.log(data);
-     // });
-    
-    response.json("Ok");  
 });
 
 app.put('/Dispositivo/NotificarEstado/:id', function (request, response) {
@@ -86,7 +86,8 @@ app.get('/Dispositivo/ConsultarEstado/:id', function (request, response) {
     dataProvider.Device().Find(filter, function(err, data) { 
       if (data.length > 0) {
         console.log(data);
-        response.json(data);
+
+        response.json(data[0].FrecuenciaMuestreo);
       }
       else
       {
@@ -94,6 +95,8 @@ app.get('/Dispositivo/ConsultarEstado/:id', function (request, response) {
       }
     });
 });
+
+
 
 
 };

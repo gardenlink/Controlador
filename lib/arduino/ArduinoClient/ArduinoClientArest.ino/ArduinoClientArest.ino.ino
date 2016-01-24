@@ -32,7 +32,7 @@ EthernetServer ArduinoServer(80);
 int failedCounter = 0; //para manejo de error
 unsigned long lastSuccessfulUploadTime = 0; //Don't change. Used to determine if samples need to be uploaded.
 
-const unsigned long updateFrequency = 10000UL;    // Update frequency in milliseconds (20000 = 20 seconds). Change this to change your sample frequency.
+const unsigned long updateFrequency = 600000UL;    // Update frequency in milliseconds (20000 = 20 seconds). Change this to change your sample frequency.
 
 #define PUERTO_REST_API 9000
 #define PIN_SENSOR_PLANTA_1 "1"
@@ -241,5 +241,3 @@ char* getIpReadable(IPAddress ipAddress)
  
   return myIPAddress;
 }
-
-
