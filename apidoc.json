@@ -1,5 +1,5 @@
 {
-  "name": "BotanicBot",
+  "name": "Gardenlink.Controlador",
   "version": "0.0.1",
   "description": "Sistema de control de riego por goteo utilizando Raspberry y Arduino",
   "apidoc": "",

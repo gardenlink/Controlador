@@ -230,7 +230,6 @@ void subscribirDispositivo(String ip) {
   int statusCode = restClient.get("/Dispositivo/ConsultarEstado/001", &response);
   bool SubscripcionOk = false;
   int failedCounter = 1;
-  char culo[10];
 
   while(SubscripcionOk == false && failedCounter < 6)
   {
@@ -238,7 +237,6 @@ void subscribirDispositivo(String ip) {
     {
       response.remove(0,1);
       response.remove(response.length()-1,1);
-      //response.toCharArray(culo, sizeof(response));
       frecuencia = response.toInt();
       SubscripcionOk = true;
     }

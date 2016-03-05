@@ -1,6 +1,6 @@
 {
   "name": "GardenLink.Controlador",
-  "description": "Sistema de control de riego por goteo utilizando Raspberry y Arduino",
+  "description": "Sistema de control de riego utilizando Raspberry y Arduino",
   "main": "Controlador.js",
   "authors": [
     "Diego Navarro M."
