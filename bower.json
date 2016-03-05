@@ -1,0 +1,30 @@
+{
+  "name": "GardenLink.Controlador",
+  "description": "Sistema de control de riego por goteo utilizando Raspberry y Arduino",
+  "main": "Controlador.js",
+  "authors": [
+    "Diego Navarro M."
+  ],
+  "license": "ISC",
+  "keywords": [
+    "Riego",
+    "Huerta",
+    "Planta"
+  ],
+  "homepage": "https://github.com/gardenlink/Controlador",
+  "moduleType": [
+    "node"
+  ],
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "jquery": "~2.1.0",
+    "angular-bootstrap": "^1.1.2",
+    "ng-admin": "^0.9.1"
+  }
+}

@@ -1,3 +1,8 @@
+/*  GARDENLINK - ARDUINO CLIENT 
+ *  Version 0.1
+ *  Fecha 16-02-2016
+ */
+
 #include <SPI.h>
 #include <Ethernet.h>
 #include "DHT.h"

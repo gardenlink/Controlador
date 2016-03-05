@@ -1,1 +1,1 @@
-apidoc -i . -f "BotanicBot.js" -o ./docs/ -v
+apidoc -i . -f "Controlador.js" -o ./docs/ -v

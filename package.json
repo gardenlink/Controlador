@@ -1,11 +1,20 @@
 {
-  "name": "BotanicBot",
+  "name": "GardenLink.Controlador",
   "version": "0.0.1",
   "dependencies": {
     "apidoc": "0.12.1",
     "async": "^1.4.2",
+    "bower": "^1.7.7",
     "ejs": ">= 0.0.0",
     "express": "3.x",
+    "grunt": "^0.4.5",
+    "grunt-bower-task": "^0.4.0",
+    "grunt-contrib-cssmin": "latest",
+    "grunt-contrib-jshint": "latest",
+    "grunt-contrib-less": "latest",
+    "grunt-contrib-uglify": "latest",
+    "grunt-contrib-watch": "latest",
+    "jshint-stylish": "latest",
     "later": "1.1.6",
     "mocha": "^2.3.4",
     "moment": "2.9.0",
@@ -22,19 +31,22 @@
     "restler": "3.2.2",
     "serialport": "1.7.4",
     "serve-static": "1.9.2",
+    "should": "^8.2.2",
+    "supertest": "^1.2.0",
+    "underscore": "^1.8.3",
     "unit.js": "^2.0.0",
     "winston": "0.9.0"
   },
   "apidoc": {
-    "title": "BotanicBot",
-    "url": "https://github.com/Botanicbot/App.git"
+    "title": "GardenLink.Controlador",
+    "url": "https://github.com/GardenLink/Controlador.git"
   },
   "scripts": {
-    "start": "node BotanicBot.js release",
-	"test": "mocha test"
+    "start": "node Controlador.js release",
+    "test": "mocha test"
   },
-  "description": "Sistema de control de riego por goteo utilizando Raspberry y Arduino",
-  "main": "BotanicBot.js",
+  "description": "Sistema de control de riego utilizando Raspberry y Arduino",
+  "main": "Controlador.js",
   "directories": {
     "doc": "docs"
   },
@@ -47,6 +59,6 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "git://github.com/Botanicbot/App.git"
+    "url": "git://github.com/Gerdenlink/Controlador.git"
   }
 }

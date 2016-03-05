@@ -1,4 +1,4 @@
-module.exports = function(app, req, moment, logger, dispositivos, dataProvider) {
+module.exports = function(app, req, moment, logger, dataProvider) {
 
 
   /* REGISTRO DE TIEMPO */
@@ -11,7 +11,7 @@ var UltimoRiegoFecha;
 var Tiempo = 0;
 
 var BombaService = require("../lib/servicios/BombaService.js");
-var bombasvc = new BombaService(dispositivos,logger);
+//var bombasvc = new BombaService(dispositivos,logger);
 
 /* INICIO API REST */
 
@@ -120,6 +120,13 @@ app.get('/bomba/:id', function (request, response) {
  *     }
  */
 
+app.put('/api/bomba/:id', function (request, response) {
+
+});
+
+app.post('/api/bomba/:id', function (request, response) {
+
+});
 
 app.get('/activarBomba/:id', function (request, response) {
     var idBomba = request.params.id;

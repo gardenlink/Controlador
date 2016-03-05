@@ -7,6 +7,7 @@
                 "ip" : "192.168.100.100",
                 "puerto" : "80",
                 "habilitado" : "true",
+                "estado " : "false",
                 "FrecuenciaMuestreo" : "60000"
             },
             "ARDUINO_VENTANAS" : {
@@ -16,6 +17,7 @@
                 "ip" : "192.168.100.101",
                 "puerto" : "80",
                 "habilitado" : "false",
+                "estado " : "false",
                 "FrecuenciaMuestreo" : "60000"
             }
         }

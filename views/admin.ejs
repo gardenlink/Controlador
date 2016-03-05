@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <title>Gardenlink</title>
+    <link rel="stylesheet" href="/lib/js/ng-admin/ng-admin.min.css">
+  </head>
+  <body ng-app="GardenLink">
+    <div ui-view></div>
+    <script src="/lib/js/ng-admin/ng-admin.min.js"></script>
+    <script type="text/javascript">
+    var myApp = angular.module('GardenLink', ['ng-admin']);
+    myApp.config(['NgAdminConfigurationProvider', function(NgAdminConfigurationProvider) {
+        var nga = NgAdminConfigurationProvider;
+        // create an admin application
+        var admin = nga.application('GardenLink')
+         .baseApiUrl('http://localhost:9000/api/');
+        
+        //ESTADOS
+        var estados = nga.entity('estados');
+        estados.identifier(nga.field('Estado'));
+        
+        admin.addEntity(estados);
+        
+        //DISPOSITIVOS
+        
+        var dispositivos = nga.entity('dispositivos');
+        dispositivos.identifier(nga.field('Id'));
+        dispositivos.listView().fields([
+                                nga.field('Id').isDetailLink(true),
+                                nga.field('Nombre'),
+                                nga.field('Tipo'),
+                                nga.field('Ip'),
+                                nga.field('Puerto'),
+                                nga.field('Habilitado'),
+                                nga.field('Estado'),
+                                nga.field('FrecuenciaMuestreo')
+                            ]);
+        //Create
+        dispositivos.creationView().fields([
+			 nga.field('Id')
+				.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' }),
+			 nga.field('Nombre'),
+             nga.field('Tipo'),
+             nga.field('Ip'),
+             nga.field('Puerto')
+             	.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' }),
+             nga.field('Habilitado','reference')
+		 		.targetEntity(admin.getEntity('estados'))
+        		.targetField(nga.field('Estado')),
+             nga.field('Estado'),
+             nga.field('FrecuenciaMuestreo')
+             	.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' }),
+			]);
+        
+        //Update
+        dispositivos.editionView().fields(dispositivos.creationView().fields());
+        
+        admin.addEntity(dispositivos);
+        
+     // ------- END DISPOSITIVOS -----
+        
+        //Sensores
+        var sensores = nga.entity('sensores');
+        sensores.identifier(nga.field('IdSensor'));
+        sensores.listView().fields([
+                                        nga.field('IdSensor').isDetailLink(true),
+                                        nga.field('IdDispositivo'),
+                                        nga.field('Descripcion'),
+                                        nga.field('MarcaModelo'),
+                                        nga.field('Tipo'),
+                                        nga.field('Pin'),
+                                        nga.field('EsPinAnalogo'),
+                                        nga.field('Habilitado')
+                                    ]);
+        //CREATE
+        sensores.creationView().fields([
+                               			 nga.field('IdSensor')
+                               			 	.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' }),
+                               			 nga.field('IdDispositivo','reference')
+                               			 	.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' })
+                               			 	.targetEntity(admin.getEntity('dispositivos'))
+                                        	.targetField(nga.field('Id')),
+                                         nga.field('Descripcion'),
+                                         nga.field('MarcaModelo'),
+                                         nga.field('Tipo'),
+                                         nga.field('Pin')
+                                         	.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' }),
+                                         nga.field('EsPinAnalogo'),
+                                         nga.field('Habilitado', 'reference')
+                                         	.targetEntity(admin.getEntity('estados'))
+                                 			.targetField(nga.field('Estado')),
+                            			]);
+        
+        //Update
+        sensores.editionView().fields(sensores.creationView().fields());
+      
+        admin.addEntity(sensores);
+        
+        // ------- END SENSORES -----
+        
+        //Relay
+        
+        var relays = nga.entity('relays');
+        relays.identifier(nga.field('IdRelay'));
+        relays.listView().fields([
+                                        nga.field('IdRelay').isDetailLink(true),
+                                        nga.field('IdDispositivo'),
+                                        nga.field('Descripcion'),
+                                        nga.field('MarcaModelo'),
+                                        nga.field('Tipo'),
+                                        nga.field('Pin'),
+                                        nga.field('EsPinAnalogo'),
+                                        nga.field('Habilitado'),
+                                        nga.field('EsInverso')
+                                    ]);
+        //CREATE
+        relays.creationView().fields([
+                               			 nga.field('IdRelay')
+                               			 	.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' }),
+                               			 nga.field('IdDispositivo','reference')
+                               			 	.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' })
+                               			 	.targetEntity(admin.getEntity('dispositivos'))
+                                        	.targetField(nga.field('Id'))
+                                        	.remoteComplete(true),
+                                         nga.field('Descripcion'),
+                                         nga.field('MarcaModelo'),
+                                         nga.field('Tipo'),
+                                         nga.field('Pin')
+                                         	.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' }),
+                                         nga.field('EsPinAnalogo','reference')
+                                         	.targetEntity(admin.getEntity('estados'))
+                                 			.targetField(nga.field('Estado')),
+                                         nga.field('Habilitado'),
+                                         nga.field('EsInverso')
+                            			]);
+        
+        //Update
+        relays.editionView().fields(relays.creationView().fields());
+      
+        admin.addEntity(relays);
+        
+     // ------- END RELAYS -----
+     
+     
+        
+        //Motores
+        
+        var motores = nga.entity('motores');
+        motores.identifier(nga.field('IdMotor'));
+        motores.listView().fields([
+                                        nga.field('IdMotor').isDetailLink(true),
+                                        nga.field('IdDispositivo'),
+                                        nga.field('Descripcion'),
+                                        nga.field('MarcaModelo'),
+                                        nga.field('Tipo'),
+                                        nga.field('Pin'),
+                                        nga.field('EsPinAnalogo'),
+                                        nga.field('Habilitado'),
+                                        nga.field('Posicion'),
+                                        nga.field('DescripcionPosicion'),
+                                        nga.field('Accion'),
+                                        nga.field('Estado')
+                                    ]);
+        //CREATE
+        motores.creationView().fields([
+                               			 nga.field('IdMotor')
+                               			 	.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' }),
+                               			 nga.field('IdDispositivo','reference')
+                               			 	.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' })
+                               			 	.targetEntity(admin.getEntity('dispositivos'))
+                                        	.targetField(nga.field('Id'))
+                                        	.remoteComplete(true),
+                                         nga.field('Descripcion'),
+                                         nga.field('MarcaModelo'),
+                                         nga.field('Tipo'),
+                                         nga.field('Pin')
+                                         	.validation({ required: true, pattern: '[0-9\,\-_]{1,20}' }),
+                                         nga.field('EsPinAnalogo'),
+                                         nga.field('Habilitado','reference')
+                                         	.targetEntity(admin.getEntity('estados'))
+                              				.targetField(nga.field('Estado')),
+                                         nga.field('Posicion'),
+                                         nga.field('DescripcionPosicion'),
+                                         nga.field('Accion'),
+                                         nga.field('Estado','reference')
+                                         	.targetEntity(admin.getEntity('estados'))
+                              				.targetField(nga.field('Estado'))
+                            			]);
+        
+        //Update
+        motores.editionView().fields(motores.creationView().fields());
+      
+        admin.addEntity(motores);
+        
+     // ------- END MOTORES -----
+     
+     //TipoActuadores
+        
+        var tipoactuadores = nga.entity('tipoactuadores');
+        tipoactuadores.identifier(nga.field('IdTipoActuador'));
+        
+        tipoactuadores.listView().fields([
+                                        nga.field('IdTipoActuador').isDetailLink(true),
+                                        nga.field('Descripcion')
+                                    ]);
+        //CREATE
+        tipoactuadores.creationView().fields([
+                               			nga.field('IdTipoActuador')
+                               				.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' }),
+                                        nga.field('Descripcion')
+                            			]);
+        
+        //Update
+        tipoactuadores.editionView().fields(tipoactuadores.creationView().fields());
+      
+        admin.addEntity(tipoactuadores);
+        
+     // ------- END TIPOACTUADORES
+     
+     
+     //Temporizador
+        
+        var temporizadores = nga.entity('temporizadores');
+        temporizadores.identifier(nga.field('IdTemporizador'));
+        
+        temporizadores.listView().fields([
+                                        nga.field('IdTemporizador').isDetailLink(true),
+                                        nga.field('IdDispositivo'),
+                                        nga.field('IdTipoActuador'),
+                                        nga.field('IdActuador'),
+                                        nga.field('Descripcion'),
+                                        nga.field('DuracionMinutos'),
+                                        nga.field('NumeroDias'),
+                                        nga.field('HorasActivacion'),
+                                        nga.field('Habilitado')
+                                    ]);
+        //CREATE
+        temporizadores.creationView().fields([
+                               			nga.field('IdTemporizador')
+                               				.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' }),
+                               			nga.field('IdDispositivo','reference')
+                               				.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' })
+                               			 	.targetEntity(admin.getEntity('dispositivos'))
+                                        	.targetField(nga.field('Id')),
+                                        nga.field('IdTipoActuador', 'reference')
+                                        	.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' })
+                                        	.targetEntity(admin.getEntity('tipoactuadores'))
+                                        	.targetField(nga.field('IdTipoActuador')),
+                                        nga.field('IdActuador')
+                                        	.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' }),
+                                        nga.field('Descripcion'),
+                                        nga.field('DuracionMinutos')
+                                        	.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' }),
+                                        nga.field('NumeroDias')
+                                        	.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' }),
+                                        nga.field('HorasActivacion'),
+                                        nga.field('Habilitado')
+                            			]);
+        
+        //Update
+        temporizadores.editionView().fields(temporizadores.creationView().fields());
+      
+        admin.addEntity(temporizadores);
+        
+     // ------- END TEMPORIZADORES -----
+        
+  		
+        
+        
+        
+        //MENU:
+        	/*
+        admin.menu(nga.menu()
+        .addChild(nga.menu(dispositivos).icon('<span class="glyphicon glyphicon-user"></span>'))
+        .addChild(nga.menu(sensores).icon('<span class="glyphicon glyphicon-pencil"></span>'))
+    	);
+        */
+        
+        
+        nga.configure(admin);
+    }]);
+    </script>
+  </body>
+</html>

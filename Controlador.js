@@ -1,10 +1,9 @@
 
 /*
- * CONTROLADOR 0.1
+ * GARDENLINK.CONTROLADOR 0.1
  * Sistema para monitoreo y control de riego automatizado 
  * utilizando Raspberry + Arduino
- * Autor: mantgambl
- * Instrucciones: http://medium.com/mantgambl
+ * Autor: GardenLink
  * Fecha: 15-01-2015
  */
 
@@ -22,10 +21,6 @@ var fs = require('fs'); //leer desde el filesystem
 var passport = require('passport')
 var util = require('util')
 var TwitterStrategy = require('passport-twitter').Strategy;
-
-
-
-
 
 
 /*************************** CONFIG *******************************/
@@ -97,40 +92,18 @@ console.log("Lectura archivo de configuracion config.json...");
 appHost = config.app_host;
 appPort = config.app_port;
 
-//TEst Async
-
-/*
-var async = require('async');
-var ping = require('ping');
-
-var isAlive = false;
-async.each(config.dispositivos, function(item, callback) { 
-  
-   ping.sys.probe(item.ip, function(isAlive){
-      console.log(item.ip + " isAlive? : " + isAlive);
-      callback();
-   });
-}, function(err) {
-  console.log("***************************************************************terminado");
-});
-*/
 
 
-dispositivos = config.dispositivos;
-console.log("Dispositivos Arduino configurados: " + Object.keys(dispositivos).length);
-for (var dispositivo in dispositivos) {
-  console.log("-------------------------------------------------------");
-  console.log(" NOMBRE: " + dispositivos[dispositivo].nombre);  
-  console.log(" ID: " + dispositivos[dispositivo].id);  
-  console.log(" TIPO: " + dispositivos[dispositivo].tipo);  
-  console.log(" IP: " + dispositivos[dispositivo].ip);  
-  console.log(" PUERTO: " + dispositivos[dispositivo].puerto);  
-  console.log(" HABILITADO: " + dispositivos[dispositivo].habilitado);  
-  console.log(" FRECUENCIA MUESTREO: " + dispositivos[dispositivo].FrecuenciaMuestreo);
+//Base de datos
+console.log("Configurando Base de Datos");
+logger.info("Configurando Base de Datos");
 
+var DataProvider = require('./lib/dao/DataProvider.js');
+var dataProvider = new DataProvider(logger, config, null);
 
-}
-console.log("-------------------------------------------------------");
+//Servicios
+var SS = require('./lib/servicios/ServiceProvider.js');
+var serviceProvider = new SS(dataProvider, logger, function(err, data){ });
 
 
 console.log("BotanicBot Host: " + appHost);
@@ -171,30 +144,23 @@ logger.info("Publicacion Twitter : " + config.twitter_enabled);
 logger.info("Autenticacion Twitter : " + config.twitter_autenticacion);
 
 
-//Base de datos
-console.log("Configurando Base de Datos");
-logger.info("Configurando Base de Datos");
-
-var DataProvider = require('./lib/dao/DataProvider.js');
-var dataProvider = new DataProvider(logger, config, null);
-
-
 
 /* TEMPORIZADOR */
 console.log("Configurando Temporizador...");
 logger.info("Configurando Temporizador...")
 var Temporizador = require("./lib/Temporizador.js");
-var tareas = new Temporizador(config, logger, mailer,tweet,dispositivos,dataProvider);
+var tareas = new Temporizador(config, logger, mailer,tweet,dataProvider);
 tareas.Iniciar();
 console.log("Fin Configuracion Temporizador...");
 logger.info("Fin Configuracion Temporizador..."); 
+
 
 
 /* Monitoreo de Salud (Lectura Sensores) */
 console.log("Configurando Modulo de Monitorizacion de Salud...");
 logger.info("Configurando Modulo de Monitorizacion de Salud...")
 var MonitorSalud = require("./lib/MonitorSalud.js");
-var monitor = new MonitorSalud(config, logger, mailer,moment,tweet,dispositivos, dataProvider);
+var monitor = new MonitorSalud(config, logger, mailer,moment,tweet, dataProvider);
 monitor.Iniciar();
 console.log("Fin Configuracion Modulo Monitorizacion de Salud...");
 logger.info("Fin Configuracion Modulo Monitorizacion de Salud...");
@@ -235,11 +201,19 @@ logger.info("Preparando Rutas de aplicacion..");
 
 console.log("./routes/Bomba");
 logger.info("./routes/Bomba");
-require('./routes/Bomba.js')(app, req, moment, logger, dispositivos,dataProvider);
+require('./routes/Bomba.js')(app, req, moment, logger,dataProvider);
 
 console.log("./routes/Sensor");
 logger.info("./routes/Sensor");
-require('./routes/Sensor.js')(app, req, moment, logger, dispositivos);
+require('./routes/Sensor.js')(app, moment, dataProvider, serviceProvider, logger);
+
+console.log("./routes/Relay");
+logger.info("./routes/Relay");
+require('./routes/Relay.js')(app, moment, dataProvider, logger);
+
+console.log("./routes/Temporizador");
+logger.info("./routes/Temporizador");
+require('./routes/Temporizador.js')(app, moment, dataProvider, logger);
 
 console.log("./routes/Monitor");
 logger.info("./routes/Monitor");
@@ -256,9 +230,28 @@ console.log("./routes/Log");
 logger.info("./routes/Log");
 require('./routes/Log')(app, auxiliares, logger, tareas,fs, _dirname);
 
+console.log("./routes/admin");
+logger.info("./routes/admin");
+require('./routes/Admin')(app);
+
 console.log("./routes/Dispositivo");
 logger.info("./routes/Dispositivo");
-require('./routes/Dispositivo')(app,moment,dataProvider,logger);
+require("./routes/Dispositivo")(app, moment, dataProvider, logger);
+
+console.log("./routes/TipoActuador");
+logger.info("./routes/TipoActuador");
+require("./routes/TipoActuador")(app, dataProvider, logger);
+
+console.log("./routes/Motor");
+logger.info("./routes/Motor");
+require('./routes/Motor.js')(app, moment, dataProvider, logger);
+
+console.log("./routes/Estados");
+logger.info("./routes/Estados");
+require('./routes/Estados.js')(app, logger);
+
+
+
 
 
 /*
@@ -273,37 +266,6 @@ for (c in config.actuadores) {
   }
 }
 */
-
-var ServiceProvider = require('./lib/servicios/ServiceProvider.js');
-var devices;
- var filter =  {};
-
-
-//TODO: Usar Async
-
-
-
-
-var serviceProvider;
-dataProvider.Device().GetAll(function(error,docs){
-        if (error) 
-          console.log(error);
-        else
-          serviceProvider = new ServiceProvider(docs, logger);
-          serviceProvider.Motor("001").Estado(1,function(error, data) {console.log(data);});
-        });
-
-
-
-
-
-
-// serviceProvider.Bomba("002").GetEstadoBomba(1,
-//                                             function(data, err) { 
-//                                               console.log(data);
-//                                             }
-//                                           );
-
 
 
 console.log("Fin Configuracion ...");

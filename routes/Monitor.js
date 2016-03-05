@@ -1,6 +1,6 @@
 module.exports = function(app, moment, dataProvider, logger, graficos){
 
-var ArestLibrary = require("../lib/Arduino/Arest.js");
+var ArestLibrary = require("../lib/servicios/Arest.js");
 var arduinoService; 
 
 

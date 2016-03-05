@@ -1,0 +1,4 @@
+{"IdTipoActuador":3,"Descripcion":"MOTOR","_id":"Aftr16I58GyqAriU"}
+{"IdTipoActuador":2,"Descripcion":"RELAY","_id":"I4Mh88UE3Cp1Euoa"}
+{"IdTipoActuador":1,"Descripcion":"SENSOR","_id":"iukLnqlfOs1gF9La"}
+{"$$indexCreated":{"fieldName":"IdTipoActuador","unique":true,"sparse":true}}

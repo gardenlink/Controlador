@@ -1,6 +1,20 @@
 module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
+        bower: {
+   		 install: {
+       		//just run 'grunt bower:install' and you'll see files from your Bower packages in lib directory
+       		options: {
+		        targetDir: './public/lib/js',
+		        //layout: 'byType',
+		        install: true,
+		        verbose: true,
+		        cleanTargetDir: false,
+		        cleanBowerDir: false,
+		        bowerOptions: {}
+		      }
+    	  }
+  		},
         concat: {
             css: {
                 src: [
@@ -102,11 +116,12 @@ module.exports = function(grunt) {
             }
         }
     });
-
-    grunt.loadNpmTasks('grunt-contrib-concat');
-    grunt.loadNpmTasks('grunt-contrib-uglify');
-    grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-contrib-cssmin');
-    grunt.loadNpmTasks('grunt-string-replace');
-    grunt.registerTask('default', [ 'concat:css', 'cssmin:css', 'concat:fb', 'concat:thirdparty', 'concat:plugins', 'concat:fb+plugins', 'uglify:fb', 'uglify:plugins', 'uglify:fb+plugins', 'uglify:thirdparty', 'string-replace:css' ]);
+	grunt.loadNpmTasks('grunt-bower-task'); //copio archivos BOWER a la ruta correcta
+    //grunt.loadNpmTasks('grunt-contrib-concat');
+    //grunt.loadNpmTasks('grunt-contrib-uglify');
+    //grunt.loadNpmTasks('grunt-contrib-watch');
+    //grunt.loadNpmTasks('grunt-contrib-cssmin');
+    //grunt.loadNpmTasks('grunt-string-replace');
+    //grunt.registerTask('default', [ 'concat:css', 'cssmin:css', 'concat:fb', 'concat:thirdparty', 'concat:plugins', 'concat:fb+plugins', 'uglify:fb', 'uglify:plugins', 'uglify:fb+plugins', 'uglify:thirdparty', 'string-replace:css' ]);
+    grunt.registerTask('default', [ 'bower' ]);
 };

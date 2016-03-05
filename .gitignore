@@ -30,3 +30,9 @@ node_modules
 
 # Users Environment Variables
 .lock-wscript
+
+#Notas personales
+*.notes
+
+#Bower
+bower_components
