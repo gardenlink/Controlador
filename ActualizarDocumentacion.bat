@@ -1,1 +1,1 @@
-apidoc -i . -f "Controlador.js" -o ./docs/ -v
+apidoc -i ./routes/ -f ".js" -o ./docs/ -v

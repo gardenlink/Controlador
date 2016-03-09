@@ -2,7 +2,11 @@ module.exports = function(app, dataProvider, logger) {
 
 /* INICIO API REST */
 
-
+/**
+ * @api {get} /api/tipoactuadores Obtiene la lista de actuadores
+ * @apiName tipoactuadores
+ * @apiGroup TipoActuador
+ */
 app.get('/api/tipoactuadores', function(request, response){
 	 dataProvider.TipoActuador().GetAll(function(err, data) { 
       if (data.length > 0) {
@@ -16,7 +20,14 @@ app.get('/api/tipoactuadores', function(request, response){
 	 
 });
 
-
+/**
+ * @api {get} /api/tipoactuadores/:id Obtiene el tipo de actuador
+ * @apiName tipoactuadores
+ * @apiGroup TipoActuador
+ *
+ * @apiParam {Number} id TipoActuador unique ID.
+ *
+ */
 app.get('/api/tipoactuadores/:id', function (request, response) {
      var idTipoActuador = request.params.id;
 
@@ -32,6 +43,7 @@ app.get('/api/tipoactuadores/:id', function (request, response) {
       }
     });
 });
+
 
 
 };

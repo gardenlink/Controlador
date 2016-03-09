@@ -10,7 +10,7 @@ var UltimoRiegoTiempo = 0;
 var UltimoRiegoFecha;
 var Tiempo = 0;
 
-var BombaService = require("../lib/servicios/BombaService.js");
+//var BombaService = require("../lib/servicios/BombaService.js");
 //var bombasvc = new BombaService(dispositivos,logger);
 
 /* INICIO API REST */
