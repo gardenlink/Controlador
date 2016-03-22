@@ -1,3 +1,4 @@
+
 /*  GARDENLINK - ARDUINO CLIENT 
  *  Version 0.1
  *  Fecha 16-02-2016
@@ -19,8 +20,8 @@ String IP = "192.168.100.100";  //En caso de no poder conseguir IP por DHCP, se 
 
 /* //Servidor Maestro -> Raspberry */
 EthernetClient client;  
-IPAddress server(192,168,100,149); 
-RestClient restClient = RestClient("192.168.0.14",9000); 
+IPAddress server(192,168,0,12); 
+RestClient restClient = RestClient("192.168.0.12",9000); 
 
 
 char myIPAddress[20]; 
@@ -37,7 +38,7 @@ EthernetServer ArduinoServer(80);
 
 
 /* Datos internos */
-#define ID_DISPOISTIVO "002"
+#define DEVICE "002"
 #define KEY_DISPOSITIVO "001_UNTOPO_$"
 #define NOMBRE "CONTROLADOR_VENTANAS"
 
@@ -71,8 +72,7 @@ void setup()
 {
   
   //Datos para los servicios REST
-  rest.set_id(ID_DISPOISTIVO);
-  rest.set_name(NOMBRE);
+  
   rest.function("Avanzar",avanzarMotor); //Avanzar Motor
   rest.function("Retroceder", retrocederMotor); // Retroceder Motor
   rest.function("Estado", estadoMotor);
@@ -80,6 +80,11 @@ void setup()
   rest.function("Temperatura", getTemperatura);
   rest.function("Humedad", getTemperatura);
   rest.function("IdDispositivo", setIdDispositivo);
+
+  rest.set_name("001");
+  rest.set_id("001");
+  
+  
 
   
   dht.begin();
@@ -94,10 +99,10 @@ void loop()
 { 
   if(millis() - lastSuccessfulUploadTime > updateFrequency + 3000UL )
   {
- 
+    
     for (int i=0; i<N_SENSORES;i++) {
        //actualizarSensores(Sensores[i],leerSensor(Sensores[i]));
-       delay(12000);
+       delay(1000);
     }
   }
 
@@ -154,7 +159,7 @@ void actualizarSensores(String idSensor, int valor) {
     {
       String PostData = "valor=" + (String)valor;
       client.println("PUT /monitor/GrabarMedicion/" + idSensor + " HTTP/1.1");
-      client.println("Host: 192.168.100.112");
+      client.println("Host: 192.168.0.12");
       client.println("User-Agent: Arduino/1.0");
       client.println("Content-Type:  application/x-www-form-urlencoded");
       client.println("Connection: close");
@@ -241,7 +246,7 @@ void iniciarEthernet()
 //Reportar la IP de este dispositivo al master (raspberry)
 void subscribirDispositivo(String ip) {
   unsigned long connectAttemptTime = millis();
-  unsigned long frecuencia = 600000UL;
+  unsigned long frecuencia = 60000UL;
   restClient.setContentType("application/x-www-form-urlencoded");
   //restClient.setHeader("User-Agent: Arduino/1.0");
 
@@ -253,22 +258,26 @@ void subscribirDispositivo(String ip) {
   //id Dispositivo
   String spath = "/api/dispositivos/" + ID_DISPOSITIVO + "/ip";
   char pPath[spath.length()+1];
-  spath.toCharArray(pPath, sizeof(pPath)); 
+  spath.toCharArray(pPath, sizeof(pPath));
+
+  
 
   //Llamada a servicio 
-  int statusCode = restClient.put(pPath, pBody);
+  int statusCode = restClient.put(pPath, pBody,  &response);
   statusCode = 200;
   
   bool SubscripcionOk = false;
   int failedCounter = 1;
-  char culo[10];
+  
 
   while(SubscripcionOk == false && failedCounter < 6)
   {
+     
     if (statusCode != 0)
     {
-      response.remove(0,1);
-      response.remove(response.length()-1,1);
+     
+      //response.remove(0,1);
+      //response.remove(response.length()-1,1);
       
       frecuencia = response.toInt();
       SubscripcionOk = true;
@@ -287,7 +296,7 @@ void subscribirDispositivo(String ip) {
     Serial.println("Conteo : " + (String)failedCounter);
     Serial.println("OK : " + (String)SubscripcionOk);
     
-    delay(5000);
+    delay(2000);
   }
 
   if (failedCounter > 5 )

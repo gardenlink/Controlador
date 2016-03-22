@@ -81,8 +81,8 @@ for (var dev in ifaces) {
       if (details.address!="127.0.0.1" && found == false) {
           found = true;
           IPAddress=details.address;
-          console.log("Deteccion de IP del host BotanicBot: " + IPAddress);
-          logger.info("Deteccion de IP del host BotanicBot: " + IPAddress);
+          console.log("Deteccion de IP del host GardenLink: " + IPAddress);
+          logger.info("Deteccion de IP del host GardenLink: " + IPAddress);
         }
     }
   });
@@ -185,6 +185,8 @@ app.configure(function() {
   app.use(passport.session());
   app.use(app.router);
   app.use(express.static(__dirname + '/public'));
+  
+ 
 });
 
 
@@ -209,7 +211,7 @@ require('./routes/Sensor.js')(app, moment, dataProvider, serviceProvider, logger
 
 console.log("./routes/Relay");
 logger.info("./routes/Relay");
-require('./routes/Relay.js')(app, moment, dataProvider, logger);
+require('./routes/Relay.js')(app, moment, dataProvider, serviceProvider, logger);
 
 console.log("./routes/Temporizador");
 logger.info("./routes/Temporizador");

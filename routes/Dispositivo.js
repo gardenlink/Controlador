@@ -122,11 +122,12 @@ app.put('/api/dispositivos/:id/ip', function(request, response) {
       }
       
       if (data) {
+      	console.log("Llega peticion -> valor: " + data.FrecuenciaMuestreo);
         dataProvider.Device().Save(data.Id, data.Nombre, data.Tipo, ip,data.Puerto,data.Habilitado,estado, data.FrecuenciaMuestreo);
-        response.send(data.FrecuenciaMuestreo);      
+        response.json(data.FrecuenciaMuestreo);
       }
       else{
-        response.json("");
+        response.json("-1");
       }
     });
 });

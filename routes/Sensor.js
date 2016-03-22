@@ -28,7 +28,11 @@ app.get('/api/sensores/:id', function (request, response) {
      var filter = {IdSensor : String};
     filter.IdSensor = idSensor;
     dataProvider.Sensor().Find(filter, function(err, data) { 
-      if (data) {
+      if (err) {
+      	response.send(err);
+      }
+      else if (data) {
+      
         response.send(data);
       }
       else

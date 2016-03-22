@@ -14,5 +14,9 @@
                  "IdTipoActuador" : "3",
                 "Descripcion" : "MOTOR"
             }
+            "Temp4" : {
+                 "IdTipoActuador" : "4",
+                "Descripcion" : "BOMBA"
+            }
         }
     }

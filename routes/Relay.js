@@ -1,6 +1,14 @@
-module.exports = function(app, moment, dataProvider, logger) {
+module.exports = function(app, moment, dataProvider, serviceProvider, logger) {
+
+var Auxiliares = require('../lib/util/Auxiliares.js');
+var helper = new Auxiliares();
+
+var throwjs = require('throw.js');
+
+var _DEBUG = true;
 
 /* INICIO API REST */
+
 
 
 app.get('/api/relays', function(request, response){
@@ -33,7 +41,6 @@ app.get('/api/relays/:id', function (request, response) {
 });
 
 
-
 app.post('/api/relays',function(request, response) {
 
     dataProvider.Relay().Save(request.body.IdRelay, 
@@ -44,6 +51,7 @@ app.post('/api/relays',function(request, response) {
     						   request.body.Pin,
     						   request.body.EsPinAnalogo,
     						   request.body.Habilitado,
+    						   request.body.Activo,
     						   request.body.EsInverso
     						   );
     response.json("ok");
@@ -61,6 +69,7 @@ app.put('/api/relays/:id', function(request, response) {
     						   request.body.Pin,
     						   request.body.EsPinAnalogo,
     						   request.body.Habilitado,
+    						   request.body.Activo,
     						   request.body.EsInverso
     						   );
     						   
@@ -71,6 +80,88 @@ app.delete('/api/relays/:id', function(request, response){
 	dataProvider.Relay().Delete(request.params.id);
 	response.json("ok");
 });
+
+app.patch('/api/relays/:id', function(request, response) {
+	var idRelay = request.params.id;
+    var op = request.body.op; //solamente replace por ahora 
+    var path = request.body.path; //debe venir sin comillas
+    var valor = request.body.value;
+    
+	var filter = {IdRelay : String};
+    filter.IdRelay = idRelay;
+    dataProvider.Relay().Find(filter, function(err, data) { 
+      if (data) {
+      	//Campo modificado
+      	data[path] = valor;
+      	
+      	//Si el cambio es para activar o desactivar el RElay, llamo al servicio de Arduino
+      	if (path == "Activo") {
+      		var activo = helper.toBoolean(valor);
+      		
+      		if (_DEBUG)
+      			console.log("valor de variable Activo : " + activo);
+      		
+      		if (activo == true) {
+      			serviceProvider.Relay().Activar(data.IdDispositivo, data.IdRelay, function (error, doc) {
+      				if (error) {
+      					console.log("[PATCH] /api/relays/Error all lamar a servicio Arduino para Relays -> error :  ", error);
+      					response.json({error : -1});
+      					
+      				}
+      				else {
+	      				dataProvider.Relay().Save(idRelay, 
+	            				 data.IdDispositivo, 
+	            				 data.Descripcion, 
+	            				 data.MarcaModelo, 
+	            				 data.Tipo, 
+	            				 data.Pin, 
+	            				 data.EsPinAnalogo,
+	            				 data.Habilitado, 
+	            				 data.Activo,
+	            				 data.EsInverso);
+	            				 
+	            		response.json(data);
+            		}
+      			}); 
+      		}
+      		else if (activo == false)
+      		{
+      			serviceProvider.Relay().Desactivar(data.IdDispositivo, data.IdRelay, function (error, doc) {
+      				if (error) {
+      					console.log("[PATCH] /api/relays/Error all lamar a servicio Arduino para Relays -> error :  ", error);
+      					response.json(error);
+      				}
+      				else {
+      					dataProvider.Relay().Save(idRelay, 
+            				 data.IdDispositivo, 
+            				 data.Descripcion, 
+            				 data.MarcaModelo, 
+            				 data.Tipo, 
+            				 data.Pin, 
+            				 data.EsPinAnalogo,
+            				 data.Habilitado, 
+            				 data.Activo,
+            				 data.EsInverso);
+            				 
+            				 response.json(data);
+            		}
+      			}); 
+      		}
+      		else {
+      			response.json("El valor del atributo Activo no es valido");
+      		}
+      		
+      	}
+      }
+      else
+      {
+      	console.log("entra");
+      	response.send("");
+      }
+    });
+	
+});
+
 
 
 
