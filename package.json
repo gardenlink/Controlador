@@ -61,5 +61,8 @@
   "repository": {
     "type": "git",
     "url": "git://github.com/Gerdenlink/Controlador.git"
+  },
+  "engines": {
+    "node": "4.0"
   }
 }

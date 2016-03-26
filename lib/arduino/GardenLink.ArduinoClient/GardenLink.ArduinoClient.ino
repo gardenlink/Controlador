@@ -18,40 +18,48 @@ byte subnet[]  = { 255, 255, 255,   0 };
 String IP = "192.168.100.100";  //En caso de no poder conseguir IP por DHCP, se usa esta IP.
 
 
-/* //Servidor Maestro -> Raspberry */
+
+/*  Configuracion de Red: *************************************
+ *  EthernetClient : Libreria Base
+ *  aREst : Servidor web para exponer api rest en arduino
+ *  RestClient : Cliente para consumir servicios rest
+ */
+
+//EthernetClient
 EthernetClient client;  
-IPAddress server(192,168,0,12); 
-RestClient restClient = RestClient("192.168.0.12",9000); 
-
-
 char myIPAddress[20]; 
 
-
-String response;
-
-
+//Arest
+IPAddress server(192,168,200,32);  //IP de Servidor Maestro para 
 // Create aREST instance
 aREST rest = aREST();
 // Ethernet server
 EthernetServer ArduinoServer(80);
 
 
+//RestClient
+RestClient restClient = RestClient("192.168.200.32",9000); 
+String response; //Almacena la respuesta del cliente
 
-/* Datos internos */
-#define DEVICE "002"
+
+/* Datos de Dispositivo */
+#define DEVICE "001"
 #define KEY_DISPOSITIVO "001_UNTOPO_$"
-#define NOMBRE "CONTROLADOR_VENTANAS"
+#define NOMBRE "CONTROLADOR_PRINCIPAL"
 
-String ID_DISPOSITIVO = "002";
+String ID_DISPOSITIVO = "001";
 
-
-int failedCounter = 0; //para manejo de error
+/* Contadores para refresco de datos */
+int failedCounter = 0; //para manejo de error (al llegar a 5 se reinicia la placa)
 unsigned long lastSuccessfulUploadTime = 0; //Don't change. Used to determine if samples need to be uploaded.
 unsigned long lastSuccessfulUploadTimeDevice = 0;
+unsigned long lastSuccessfulMotorCheckTime = 0;
 
-long updateFrequency = 30000UL;    // Update frequency in milliseconds (20000 = 20 seconds). Change this to change your sample frequency.
-long updateFrequencyDevice = 30000;
+long updateFrequency = 60000UL;    // Update frequency in milliseconds (20000 = 20 seconds). Change this to change your sample frequency.
+long updateFrequencyDevice = 60000;
+long updateFrequencyMotor = 5000;
 
+/* SENSORES */
 #define PUERTO_REST_API 9000
 #define PIN_SENSOR_PLANTA_1 "1"
 #define PIN_SENSOR_PLANTA_2 "2"
@@ -68,35 +76,107 @@ String Sensores[N_SENSORES] = {"DHT"};
 
 DHT dht(SENSOR_DHT, DHTTYPE);
 
+
+/* Controlador Motores 
+ *  
+ * #Connection:
+   #        M1 pin  -> Digital pin 6
+   #        E1 pin  -> Digital pin 7
+   #        M2 pin  -> Digital pin 4
+   #        E2 pin  -> Digital pin 5
+   #        Motor Power Supply -> Centor blue screw connector(5.08mm 3p connector)
+   #        Motor A  ->  Screw terminal close to E1 driver pin
+   #        Motor B  ->  Screw terminal close to E2 driver pin
+   # 
+   # Note: You should connect the GND pin from the DF-MD v1.3 to your MCU controller. They should share the GND pins.
+   #
+*/
+
+int E1 = 7;
+int M1 = 6;
+int E2 = 5;                         
+int M2 = 4;
+
+//Estdaos:
+// 0.- Detenido
+// 1.- Subiendo
+// 2.- Bajando
+
+
+int estado_m1;
+int estado_m2;
+int estado_m3;
+int estado_m4;
+
+
+// Posiciones:
+// 0.- Cerrado
+// 1.- 25%
+// 2.- 50%
+// 3.- 75%
+// 4.- 100%
+
+
+int posicion_m1;
+int posicion_m2;
+int posicion_m3;
+int posicion_m4;
+
+
 void setup()
 {
-  
-  //Datos para los servicios REST
-  
-  rest.function("Avanzar",avanzarMotor); //Avanzar Motor
-  rest.function("Retroceder", retrocederMotor); // Retroceder Motor
-  rest.function("Estado", estadoMotor);
-  rest.function("Posicion", posicionMotor);
-  rest.function("Temperatura", getTemperatura);
-  rest.function("Humedad", getTemperatura);
-  rest.function("IdDispositivo", setIdDispositivo);
+
+
+  //Configuracion de Motores:
+   pinMode(M1, OUTPUT);   
+   pinMode(M2, OUTPUT); 
+
+   
+   estado_m1 = 0;
+   estado_m2 = 0;
+   estado_m3 = 0;
+   estado_m4 = 0;
+   
+   
+   posicion_m1 = 0;
+   posicion_m2 = 0;
+   posicion_m3 = 0;
+   posicion_m4 = 0;
+   
+  //Servicios expuestos en la placa
 
   rest.set_name("001");
   rest.set_id("001");
   
+  //Motores
+  rest.function("Avanzar",avanzarMotor); //Avanzar Motor
+  rest.function("Retroceder", retrocederMotor); // Retroceder Motor
+  rest.function("Estado", estadoMotor); //Estado motor (ver variable estado)
+  rest.function("Posicion", posicionMotor); //ver variable posicion
+  rest.function("Detener", detenerMotor); // Detiene lo que este haciendo el motor
   
+
+  //Sensores
+//  rest.function("Temperatura", getTemperatura);
+//  rest.function("Humedad", getTemperatura);
+//  rest.function("IdDispositivo", setIdDispositivo);
 
   
   dht.begin();
- //Ethernet.begin(mac, ip); 
- Serial.begin(9600); 
- iniciarEthernet();
- delay(1000);
+ 
+  Serial.begin(9600); 
+  iniciarEthernet();
+  delay(1000);
 }
 
 
 void loop()
 { 
+
+   // Esperando por nuevos clientes
+  EthernetClient client = ArduinoServer.available();
+  rest.handle(client);
+  
   if(millis() - lastSuccessfulUploadTime > updateFrequency + 3000UL )
   {
     
@@ -112,9 +192,13 @@ void loop()
       delay(1000);
   }
 
-   // Esperando por nuevos clientes
-  EthernetClient client = ArduinoServer.available();
-  rest.handle(client);
+  if (millis() - lastSuccessfulMotorCheckTime > updateFrequencyMotor)
+  {
+      Serial.println("Entra CehckMotor");
+      RevisarMotores();
+      delay(1000);
+  }
+
 }
 
 int leerSensor(String idSensor)
@@ -159,7 +243,7 @@ void actualizarSensores(String idSensor, int valor) {
     {
       String PostData = "valor=" + (String)valor;
       client.println("PUT /monitor/GrabarMedicion/" + idSensor + " HTTP/1.1");
-      client.println("Host: 192.168.0.12");
+      client.println("Host: 192.168.200.32");
       client.println("User-Agent: Arduino/1.0");
       client.println("Content-Type:  application/x-www-form-urlencoded");
       client.println("Connection: close");
@@ -204,6 +288,7 @@ void manejarErrorConexion() {
   }
  
  }
+
 
 void iniciarEthernet()
 {
@@ -311,61 +396,235 @@ void subscribirDispositivo(String ip) {
   SubscripcionOk = true;
 
   updateFrequency = frecuencia;
-  /*
-  Serial.print("Status code from server: ");
-  Serial.println(statusCode);
-  Serial.print("Response body from server: ");
-  Serial.println(response);
-  delay(1000);
-  response = "";
-  */
-   
-   /*
-   if (client.connect(server,PUERTO_REST_API))
-   {
-      String PostData = "ip=" + ip;
-      client.println("PUT /monitor/SubscribirDispositivo/" + (String)ID_DISPOISTIVO + " HTTP/1.1");
-      client.println("Host: 192.168.100.112");
-      client.println("User-Agent: Arduino/1.0");
-      client.println("Content-Type:  application/x-www-form-urlencoded");
-      client.println("Connection: close");
-      client.print("Content-Length: ");
-      client.println(PostData.length());
-      client.println();
-      client.print(PostData);
-      Serial.println("Solicitud enviada <id>: " + (String)ID_DISPOISTIVO + " <ip>: " + ip);
-   }
-   */
-}
-
-char* getIpReadable(IPAddress ipAddress)
-{
-  //Convert the ip address to a readable string
-  unsigned char octet[4]  = {0,0,0,0};
-  for (int i=0; i<4; i++)
-  {
-    octet[i] = ( ipAddress >> (i*8) ) & 0xFF;
-  }
-  sprintf(myIPAddress, "%d.%d.%d.%d\0",octet[0],octet[1],octet[2],octet[3]);
  
-  return myIPAddress;
 }
 
+int checkMotor1() {
+
+   //Si estoy levantando el piston y su posicion aun no llega a 100
+  if (estado_m1 != 0)
+  {
+    if (estado_m1 == 1) { 
+      if (posicion_m1 < 4) {
+      posicion_m1++;
+      
+      Serial.print("Posicion M1 : " + (String)posicion_m1);
+      
+        for(int value = 0 ; value <= 255; value+=5) {
+          
+           digitalWrite(M1, HIGH);
+           analogWrite(E1, value);   //PWM Speed Control   
+           delay(30);      
+        }
+      }
+      else
+      {
+        detenerMotor("1");
+        Serial.print("Detencion de avance Automatica: ");
+      }
+    }
+  }
+
+    if (estado_m1 == 2) { 
+      if (posicion_m1 > 0) {
+        posicion_m1--;
+        Serial.print("Posicion M1 : " + posicion_m1);
+        
+        for(int value = 0 ; value <= 255; value+=5) {
+          
+           digitalWrite(M1, LOW);
+           analogWrite(E1, value);   //PWM Speed Control     
+           delay(30);    
+        }
+      }
+      else
+      {
+        detenerMotor("1");
+        Serial.print("Detencion de reotroceso Automatica: ");
+      }
+    }
+    
+  
+}
+
+int checkMotor2() {
+
+   //Si estoy levantando el piston y su posicion aun no llega a 100
+  if (estado_m2 != 0)
+  {
+    if (estado_m2 == 1 && posicion_m2 < 4) { 
+
+      posicion_m2++;
+      Serial.print("Posicion M2 : " + posicion_m2);
+      
+      for(int value = 0 ; value <= 255; value+=5) {
+        
+         digitalWrite(M2, HIGH);
+         analogWrite(E2, value);   //PWM Speed Control  
+         delay(30);       
+      }
+    }
+
+  if (estado_m2 == 2 && posicion_m2 > 0) { 
+
+      posicion_m2--;
+      Serial.print("Posicion M2 : " + posicion_m2);
+      
+      for(int value = 0 ; value <= 255; value+=5) {
+        
+         digitalWrite(M2, LOW);
+         analogWrite(E2, value);   //PWM Speed Control   
+         delay(30);      
+      }
+    }
+  }
+
+}
+
+int RevisarMotores() {
+
+  unsigned long muestraMedicion = millis();
+
+  checkMotor1();
+  checkMotor2();
+  //checkMotor3();
+  //checkMotor4();
+  
+  lastSuccessfulMotorCheckTime = muestraMedicion;
+
+}
 
 int avanzarMotor(String nmotor){
+  int motor = nmotor.toInt();
+  
+  int estado = 1; //Subiendo
+
+  Serial.println("AvanzarMotor: " + motor);
+  
+  switch(motor) {
+    case 1:
+      estado_m1 = 1;
+      break;
+
+    case 2:
+      estado_m2 = 1;
+      break;
+      
+    case 3:
+      estado_m3 = 1;
+      break;
+      
+    case 4:
+      estado_m4 = 1;
+      break;
+  }
+
   return 1;
+
 }
 
 int retrocederMotor(String nmotor){
+  int motor = nmotor.toInt();
+  int estado; //Subiendo
+  
+  switch(motor) {
+    case 1:
+      estado_m1 = 2;
+      break;
+
+    case 2:
+      estado_m2 = 2;
+      break;
+      
+    case 3:
+      estado_m3 = 2;
+      break;
+      
+    case 4:
+      estado_m4 = 2;
+      break;
+  }
+
+  return 2;
+}
+
+int detenerMotor(String nmotor){
+  int motor = nmotor.toInt();
+  int estado = 0;
+  
+  switch(motor) {
+    case 1:
+      estado_m1 = 0;      
+      analogWrite(E1, 0);   //PWM Speed Control
+      break;
+
+    case 2:
+      estado_m2 = 0;
+      analogWrite(E2, 0);   //PWM Speed Control
+      break;
+      
+    case 3:
+      estado_m3 = 0;
+//      analogWrite(E3, 0);   //PWM Speed Control
+      break;
+      
+    case 4:
+      estado_m4 = 0;
+  //    analogWrite(E4, 0);   //PWM Speed Control
+      break;
+  }
+
   return 0;
 }
 
 int estadoMotor(String nmotor){
-  return 2;
+  int motor = nmotor.toInt();
+  int estado = 0;
+  
+  switch(motor) {
+    case 1:
+      estado = estado_m1;
+      break;
+
+    case 2:
+      estado = estado_m2;
+      break;
+      
+    case 3:
+      estado = estado_m3;
+      break;
+      
+    case 4:
+      estado = estado_m4;
+      break;
+  }
+  
+  return estado;
 }
 
 int posicionMotor(String nmotor){
-  return 3;
+  int motor = nmotor.toInt();
+  int posicion;
+  
+  switch(motor) {
+    case 1:
+      posicion = posicion_m1;
+      break;
+
+    case 2:
+      posicion = posicion_m2;
+      break;
+      
+    case 3:
+      posicion = posicion_m3;
+      break;
+      
+    case 4:
+      posicion = posicion_m4;
+      break;
+  }
+
+  return posicion;
 }
 
 int setIdDispositivo(String idDispositivo) {
@@ -380,6 +639,19 @@ int getTemperatura(String idSensor) {
 
 int getHumedad(String idSensor) {
   return 8000;
+}
+
+char* getIpReadable(IPAddress ipAddress)
+{
+  //Convert the ip address to a readable string
+  unsigned char octet[4]  = {0,0,0,0};
+  for (int i=0; i<4; i++)
+  {
+    octet[i] = ( ipAddress >> (i*8) ) & 0xFF;
+  }
+  sprintf(myIPAddress, "%d.%d.%d.%d\0",octet[0],octet[1],octet[2],octet[3]);
+ 
+  return myIPAddress;
 }
 
 

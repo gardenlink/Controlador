@@ -3,6 +3,8 @@ module.exports = function(app, moment, dataProvider, serviceProvider, logger) {
 var Medicion = require("../lib/dto/Medicion.js");
 var objMedicion = new Medicion();
 
+var TipoDispositivo = "SENSOR";
+
 
 var sensorService = serviceProvider.Sensor();
 

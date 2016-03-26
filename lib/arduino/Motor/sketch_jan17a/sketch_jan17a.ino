@@ -21,10 +21,10 @@
 // # Note: You should connect the GND pin from the DF-MD v1.3 to your MCU controller. They should share the GND pins.
 // #
  
-int E1 = 8;
-int M1 = 7;
-//int E2 = 5;                         
-//int M2 = 4;    
+int E1 = 7;
+int M1 = 6;
+int E2 = 5;                         
+int M2 = 4;    
 
 bool subiendo = false;
 int ciclo = 1;
@@ -32,7 +32,7 @@ int ciclo = 1;
 void setup() 
 { 
     pinMode(M1, OUTPUT);   
-  //  pinMode(M2, OUTPUT); 
+    pinMode(M2, OUTPUT); 
   
    Serial.begin(9600);         // Used to check value
 } 
@@ -82,7 +82,7 @@ void loop()
   
   Inicializar();
   ciclo++;
-  delay(3000);
+  delay(5000);
   /*
   int value;
   for(value = 0 ; value <= 255; value+=5) 
@@ -106,9 +106,9 @@ void Inicializar()
     for(value = 0 ; value <= 255; value+=5) 
     { 
       digitalWrite(M1,HIGH);  
-      //digitalWrite(M2,HIGH);       
+      digitalWrite(M2,HIGH);       
       analogWrite(E1, value);   //PWM Speed Control
-      //analogWrite(E2, value);   //PWM Speed Control
+      analogWrite(E2, value);   //PWM Speed Control
       delay(30); 
       //Serial.write(value);
       
