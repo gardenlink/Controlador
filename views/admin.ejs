@@ -13,7 +13,7 @@
         var nga = NgAdminConfigurationProvider;
         // create an admin application
         var admin = nga.application('GardenLink')
-         .baseApiUrl('http://localhost:9000/api/');
+         .baseApiUrl('http://gardenlink.cl:9000/api/');
         
         //ESTADOS
         var estados = nga.entity('estados');
@@ -184,9 +184,7 @@
                                          nga.field('Posicion'),
                                          nga.field('DescripcionPosicion'),
                                          nga.field('Accion'),
-                                         nga.field('Estado','reference')
-                                         	.targetEntity(admin.getEntity('estados'))
-                              				.targetField(nga.field('Estado'))
+                                         nga.field('Estado')
                             			]);
         
         //Update
