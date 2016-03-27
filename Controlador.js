@@ -106,11 +106,11 @@ var SS = require('./lib/servicios/ServiceProvider.js');
 var serviceProvider = new SS(dataProvider, logger, function(err, data){ });
 
 
-console.log("BotanicBot Host: " + appHost);
-console.log("BotanicBot Port: " + appPort);
+console.log("GardenLink Host: " + appHost);
+console.log("GardenLink Port: " + appPort);
 
-logger.info("BotanicBot Host: " + appHost);  
-logger.info("BotanicBot Port:" + appPort);
+logger.info("GardenLink Host: " + appHost);  
+logger.info("GardenLink Port:" + appPort);
 
 
 console.log("Configurando Libreria Auxiliares...");
@@ -186,10 +186,17 @@ app.configure(function() {
   app.use(app.router);
   app.use(express.static(__dirname + '/public'));
   
- 
 });
 
-
+console.log("Configurando CORS..");
+logger.info("Configurando CORS..");
+// CORS header securiy
+	app.all('/*', function (req, res, next) {
+	  res.header("Access-Control-Allow-Origin", "*");
+	   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+	  res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
+	  next();
+	});
 
 //Graficos
 console.log("Configurando Libreria para graficos");
