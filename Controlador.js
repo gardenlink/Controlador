@@ -160,7 +160,7 @@ logger.info("Fin Configuracion Temporizador...");
 console.log("Configurando Modulo de Monitorizacion de Salud...");
 logger.info("Configurando Modulo de Monitorizacion de Salud...")
 var MonitorSalud = require("./lib/MonitorSalud.js");
-var monitor = new MonitorSalud(config, logger, mailer,moment,tweet, dataProvider);
+var monitor = new MonitorSalud(config, logger, mailer,moment,tweet, dataProvider, serviceProvider);
 monitor.Iniciar();
 console.log("Fin Configuracion Modulo Monitorizacion de Salud...");
 logger.info("Fin Configuracion Modulo Monitorizacion de Salud...");

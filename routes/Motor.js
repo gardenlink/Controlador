@@ -1,4 +1,4 @@
-module.exports = function(app, moment, dataProvider, logger) {
+module.exports = function(app, moment, dataProvider, serviceProvider, logger) {
 
 var _ = require('underscore');
 
