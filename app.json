@@ -1,0 +1,17 @@
+{
+  "name": "Controlador",
+  "description": "",
+  "scripts": {
+  },
+  "env": {
+    "NODE_ENV": "release"
+  },
+  "formation": {
+  },
+  "addons": [
+
+  ],
+  "buildpacks": [
+
+  ]
+}
