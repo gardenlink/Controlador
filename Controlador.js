@@ -69,7 +69,10 @@ if (environment != 'release' && environment != 'debug')
 }
 console.log("Ambiente : " + environment);
 logger.info("Ambiente : " + environment);
-var config = require("./config.json")[environment];
+//var config = require("./config.json")[environment];
+var Configuracion = require("./lib/util/Configuracion.js");
+var configuracion = new Configuracion(environment);
+var config = configuracion.LeerConfiguracion();
 
 //IP configuration del host Node.js
 var appHost = 0;
