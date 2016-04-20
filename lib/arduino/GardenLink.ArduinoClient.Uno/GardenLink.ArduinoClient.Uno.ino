@@ -1,14 +1,33 @@
 
+
+
 /*  GARDENLINK - ARDUINO CLIENT 
  *  Version 0.1
  *  Fecha 16-02-2016
  */
 
+
+
+
+//#define HTTP_DEBUG          //Comentar para deshabilitar el modo debug
+//#define ENABLE_REST_CLIENT  //Comentar para deshabilitar cliente rest
+#define ENABLE_DHT        //Comentar para deshabiitar el uso de sensor DHT
+
+#ifdef HTTP_DEBUG
+#define HTTP_DEBUG_PRINT(string) (Serial.println(string))
+#endif
+
+#ifndef HTTP_DEBUG
+#define HTTP_DEBUG_PRINT(string)
+#endif
+
 #include <SPI.h>
 #include <Ethernet.h>
-#include "DHT.h"
+#if defined (ENABLE_DHT)
+  #include <DHT.h>
+#endif
 #include <aREST.h>
-#include "RestClient.h"
+
 
 
 byte mac[] = { 0x90, 0xA2, 0xDA, 0x0D, 0x1F, 0x48 };
@@ -30,7 +49,8 @@ EthernetClient client;
 char myIPAddress[20]; 
 
 //Arest
-IPAddress server(192,168,200,32);  //IP de Servidor Maestro para 
+IPAddress server(192,168,0,12);  //IP de Servidor Maestro para 
+
 // Create aREST instance
 aREST rest = aREST();
 // Ethernet server
@@ -38,14 +58,16 @@ EthernetServer ArduinoServer(80);
 
 
 //RestClient
-RestClient restClient = RestClient("192.168.200.32",9000); 
+//RestClient restClient = RestClient("192.168.200.32",9000); 
+const char* host;
+
 String response; //Almacena la respuesta del cliente
 
 
 /* Datos de Dispositivo */
-#define DEVICE "001"
+#define DEVICE "002"
 #define NOMBRE "CONTROLADOR_PRINCIPAL"
-String ID_DISPOSITIVO = "001";
+String ID_DISPOSITIVO = "002";
 
 /* Contadores para refresco de datos */
 int failedCounter = 0; //para manejo de error (al llegar a 5 se reinicia la placa)
@@ -57,12 +79,9 @@ long updateFrequency = 60000UL;    // Update frequency in milliseconds (20000 = 
 long updateFrequencyDevice = 60000;
 long updateFrequencyMotor = 5000;
 
+#if defined (ENABLE_DHT)
 /* SENSORES */
-#define PUERTO_REST_API 9000
-#define PIN_SENSOR_PLANTA_1 "1"
-#define PIN_SENSOR_PLANTA_2 "2"
-#define PIN_SENSOR_PLANTA_3 "3"
-#define PIN_SENSOR_PLANTA_4 "4"
+
 
 #define SENSOR_DHT 8    
 #define DHTTYPE DHT11   // DHT 11
@@ -75,6 +94,7 @@ String Sensores[N_SENSORES] = {"DHT"};
 DHT dht1(SENSOR_DHT, DHTTYPE);
 //DHT dht2(9,DHTTYPE);
 
+#endif
 
 /* Controlador Motores 
  *  
@@ -125,6 +145,7 @@ int posicion_m4;
 void setup()
 {
 
+  
 
   //Configuracion de Motores:
    pinMode(M1, OUTPUT);   
@@ -151,15 +172,27 @@ void setup()
   rest.function("Motor",Motor); //Acciones con Motores de ventanas
   
   //Sensores
+  #if defined (ENABLE_DHT)
+  dht1.begin();
   rest.function("Sensor", Sensor);
+  #endif
 //  rest.function("IdDispositivo", setIdDispositivo);
 
   //Relays
   rest.function("Relay", Relay);
   
-  dht1.begin();
- 
-  Serial.begin(9600); 
+  
+
+  #if defined(HTTP_DEBUG)
+    Serial.begin(9600); 
+  #endif
+
+  #if defined(LIGHTWEIGHT) && LIGHTWEIGHT == 1
+    HTTP_DEBUG_PRINT("Modo Liviano Activado, las funciones no entregan resultados");
+  #endif
+
+  
+  
   iniciarEthernet();
   delay(1000);
 }
@@ -176,25 +209,30 @@ void loop()
   //Reportar al master
   if (millis() - lastSuccessfulUploadTimeDevice > updateFrequencyDevice)
   {
+      #if defined (REST_CLIENT)
       subscribirDispositivo(IP);
+      #endif
       delay(1000);
   }
 
   //Revisar sensores
+  #if defined (ENABLE_DHT)
   if(millis() - lastSuccessfulUploadTime > updateFrequency + 3000UL )
   {
     
     for (int i=0; i<N_SENSORES;i++) {
+       
        //actualizarSensores(Sensores[i],leerSensor(Sensores[i]));
-       delay(1000);
+       
+       //delay(1000);
     }
   }
-
+  #endif
   //Revisar motores
   if (millis() - lastSuccessfulMotorCheckTime > updateFrequencyMotor)
   {
-      Serial.println("Entra CehckMotor");
-      RevisarMotores();
+      HTTP_DEBUG_PRINT("Entra CehckMotor");
+      //RevisarMotores();
       delay(1000);
   }
 
@@ -207,16 +245,16 @@ void manejarErrorConexion() {
   //Connection failed. Increase failed counter
   failedCounter++;
  
-  Serial.print(F("La conexion a BotanicBot fallo "));
-  Serial.print(failedCounter);  
-  Serial.println(F(" vez"));
+  HTTP_DEBUG_PRINT(F("La conexion a BotanicBot fallo "));
+  HTTP_DEBUG_PRINT(failedCounter);  
+  HTTP_DEBUG_PRINT(F(" vez"));
   delay(1000);
      
   // Check if Arduino Ethernet needs to be restarted
   if (failedCounter > 5 )
   {
     //Too many failures. Restart Ethernet.
-    Serial.print(F("Despues de 3 reintentos, reinicio ethernet "));
+    HTTP_DEBUG_PRINT(F("Despues de 3 reintentos, reinicio ethernet "));
     iniciarEthernet();
   }
  
@@ -228,8 +266,8 @@ void iniciarEthernet()
   //Start or restart the Ethernet connection.
   client.stop();
  
-  Serial.println("Obteniendo IP..");
-  Serial.println();  
+  HTTP_DEBUG_PRINT("Obteniendo IP..");
+  HTTP_DEBUG_PRINT();  
  
   //Wait for the connection to finish stopping
   delay(2000);
@@ -237,35 +275,38 @@ void iniciarEthernet()
   //Connect to the network and obtain an IP address using DHCP
   if (Ethernet.begin(mac) == 0)
   {
-    Serial.println(F("DHCP Failed, se usa ip estatica"));
+    HTTP_DEBUG_PRINT(F("DHCP Failed, se usa ip estatica"));
     Ethernet.begin(mac, ip); 
-    Serial.println();
+    HTTP_DEBUG_PRINT();
   }
   else
   {
-    Serial.println(F("Conectado a la red usando DHCP"));
+    HTTP_DEBUG_PRINT(F("Conectado a la red usando DHCP"));
  
     //Set the mac and ip variables so that they can be used during sensor uploads later
-    //Serial.print(F(" MAC: "));
-    //Serial.println(mac);
-    Serial.print(F(" IP address: "));
+    //HTTP_DEBUG_PRINT(F(" MAC: "));
+    //HTTP_DEBUG_PRINT(mac);
+    HTTP_DEBUG_PRINT(F(" IP address: "));
     IP = getIpReadable(Ethernet.localIP());
-    Serial.println(IP);
-    Serial.println();
+    HTTP_DEBUG_PRINT(IP);
+    HTTP_DEBUG_PRINT();
   }
 
-  subscribirDispositivo(IP);
+  #if defined (REST_CLIENT)
+    subscribirDispositivo(IP);
+  #endif
 
   ArduinoServer.begin();
-  Serial.println("Servidor corriendo en:  " + IP);
+  HTTP_DEBUG_PRINT("Servidor corriendo en:  " + IP);
  
 }
 
+#if defined(REST_CLIENT)
 //Reportar la IP de este dispositivo al master (raspberry)
 void subscribirDispositivo(String ip) {
   unsigned long connectAttemptTime = millis();
   unsigned long frecuencia = 60000UL;
-  restClient.setContentType("application/x-www-form-urlencoded");
+  //restClient.setContentType("application/x-www-form-urlencoded");
   //restClient.setHeader("User-Agent: Arduino/1.0");
 
   //Parametro ip (String to Char)
@@ -281,7 +322,7 @@ void subscribirDispositivo(String ip) {
   
 
   //Llamada a servicio 
-  int statusCode = restClient.put(pPath, pBody,  &response);
+  int statusCode = callPut(pPath, pBody,  &response);
   statusCode = 200;
   
   bool SubscripcionOk = false;
@@ -307,21 +348,14 @@ void subscribirDispositivo(String ip) {
       SubscripcionOk = false;
       failedCounter++;
     }
-    /*
-    Serial.print("Status code: ");
-    Serial.println((String)statusCode);
-    Serial.print("Frecuencia de Muestreo: ");
-    Serial.println((String)frecuencia);
-    Serial.println("Conteo : " + (String)failedCounter);
-    Serial.println("OK : " + (String)SubscripcionOk);
-    */
+   
     delay(2000);
   }
 
   if (failedCounter > 5 )
   {
     //Too many failures. Restart Ethernet.
-    Serial.print(F("Despues de 5 reintentos, reinicio ethernet "));
+    HTTP_DEBUG_PRINT(F("Despues de 5 reintentos, reinicio ethernet "));
     failedCounter=0;
     iniciarEthernet();
   }
@@ -333,6 +367,7 @@ void subscribirDispositivo(String ip) {
  
 }
 
+#endif
 
 /* CODIGO PARA MANEJO DE MOTORES */
 
@@ -345,7 +380,7 @@ int checkMotor1() {
       if (posicion_m1 < 4) {
       posicion_m1++;
       
-      Serial.print("Posicion M1 : " + (String)posicion_m1);
+      HTTP_DEBUG_PRINT("Posicion M1 : " + (String)posicion_m1);
       
         for(int value = 0 ; value <= 255; value+=5) {
           
@@ -357,7 +392,7 @@ int checkMotor1() {
       else
       {
         detenerMotor("1");
-        Serial.print("Detencion de avance Automatica: ");
+        HTTP_DEBUG_PRINT("Detencion de avance Automatica: ");
       }
     }
   }
@@ -365,7 +400,7 @@ int checkMotor1() {
     if (estado_m1 == 2) { 
       if (posicion_m1 > 0) {
         posicion_m1--;
-        Serial.print("Posicion M1 : " + posicion_m1);
+        HTTP_DEBUG_PRINT("Posicion M1 : " + posicion_m1);
         
         for(int value = 0 ; value <= 255; value+=5) {
           
@@ -377,7 +412,7 @@ int checkMotor1() {
       else
       {
         detenerMotor("1");
-        Serial.print("Detencion de reotroceso Automatica: ");
+        HTTP_DEBUG_PRINT("Detencion de reotroceso Automatica: ");
       }
     }
     
@@ -392,7 +427,7 @@ int checkMotor2() {
     if (estado_m2 == 1 && posicion_m2 < 4) { 
 
       posicion_m2++;
-      Serial.print("Posicion M2 : " + posicion_m2);
+      HTTP_DEBUG_PRINT("Posicion M2 : " + posicion_m2);
       
       for(int value = 0 ; value <= 255; value+=5) {
         
@@ -405,7 +440,7 @@ int checkMotor2() {
   if (estado_m2 == 2 && posicion_m2 > 0) { 
 
       posicion_m2--;
-      Serial.print("Posicion M2 : " + posicion_m2);
+      HTTP_DEBUG_PRINT("Posicion M2 : " + posicion_m2);
       
       for(int value = 0 ; value <= 255; value+=5) {
         
@@ -465,7 +500,7 @@ int Motor(String params) {
 
      default:
       resultado = -1;
-      Serial.println("Llamada a motor con parametro accion incorrecto");
+      HTTP_DEBUG_PRINT("Llamada a motor con parametro accion incorrecto");
       break;
   }
 
@@ -478,7 +513,7 @@ int avanzarMotor(String nmotor){
   
   int estado = 1; //Subiendo
 
-  Serial.println("AvanzarMotor: " + motor);
+  HTTP_DEBUG_PRINT("AvanzarMotor: " + motor);
   
   switch(motor) {
     case 1:
@@ -622,7 +657,7 @@ int Relay(String params) {
   char selector = pBody[0];
   char dPin = pinBody[0];
   int resultado;
-  Serial.println("Relay Pin en parametro "  + (String)dPin);
+  HTTP_DEBUG_PRINT("Relay Pin en parametro "  + (String)dPin);
   
   int aPin = mapAnalogPin(dPin);
   
@@ -642,7 +677,7 @@ int Relay(String params) {
       break;
 
      default:
-      Serial.println("Llamada a relay con parametro accion incorrecto");
+      HTTP_DEBUG_PRINT("Llamada a relay con parametro accion incorrecto");
       resultado = -1;
   }
   
@@ -689,6 +724,8 @@ int mapAnalogPin(char Pin) {
       analogPin = A7;
       break;
 
+    //only for mega
+    /*
      case '8':
       analogPin = A8;
       break;
@@ -696,7 +733,7 @@ int mapAnalogPin(char Pin) {
       case '9':
         analogPin =A9;
         break;
-      
+      */
       default:
         analogPin = -1;
         break;
@@ -707,6 +744,8 @@ int mapAnalogPin(char Pin) {
 
 /* CODIGO PARA MANEJO DE SENSORES */
 
+#if defined (ENABLE_DHT)
+/*
 int leerSensor(String idSensor)
 {
   int valor;
@@ -715,7 +754,7 @@ int leerSensor(String idSensor)
      float t = dht1.readTemperature();
   
      if (isnan(t)) { // || isnan(f)) {
-      Serial.println("Failed to read from DHT sensor!");
+      HTTP_DEBUG_PRINT("Failed to read from DHT sensor!");
       return -1;
      }
      valor = t;
@@ -733,47 +772,7 @@ int leerSensor(String idSensor)
   return valor;
 }
 
-
-
-void actualizarSensores(String idSensor, int valor) {
-
-    unsigned long connectAttemptTime = millis();
-
-    if (idSensor == "DHT")
-    {
-      idSensor = "8";
-    }
-    
-    
-    if (client.connect(server,PUERTO_REST_API))
-    {
-      String PostData = "valor=" + (String)valor;
-      client.println("PUT /monitor/GrabarMedicion/" + idSensor + " HTTP/1.1");
-      client.println("Host: 192.168.200.32");
-      client.println("User-Agent: Arduino/1.0");
-      client.println("Content-Type:  application/x-www-form-urlencoded");
-      client.println("Connection: close");
-      client.print("Content-Length: ");
-      client.println(PostData.length());
-      client.println();
-      client.print(PostData);
-      client.println();
-      Serial.println("Grabado sensor: " + idSensor + " Valor : " + valor);
-
-      lastSuccessfulUploadTime = connectAttemptTime;
-      failedCounter = 0;
-
-      client.stop();
-    }
-    else
-    {
-      Serial.println("Connection Fallo.");  
-      Serial.println();
-      manejarErrorConexion();
-    }
-
-     
-}
+*/
 
 //Servicio para manejo de sensores
 //Parametros:
@@ -783,17 +782,25 @@ void actualizarSensores(String idSensor, int valor) {
 //      H: Humedad
 //    IDSENSOR : ID_SENSOR desde base de datos
 //    PIN      : PIN EN DONDE ESTA EL SENSOR
+
 int Sensor(String params) {
 
+
+
+
   String accion = params.substring(0,1);
-  String idSensor = params.substring(1,(int)params.length()-1);
-  String Pin = params.substring(2,(int)params.length());
+  String idSensor = params.substring(1,(int)params.length());
+  //String Pin = params.substring(2,(int)params.length());
+
   
-  char pBody[3];
+  
+  char pBody[2];
   accion.toCharArray(pBody, sizeof(pBody));  
   char selector = pBody[0];
 
-  int resultado;
+  HTTP_DEBUG_PRINT("Llamada Sensor con parametro "  + (String)selector);
+
+  int resultado = -1;
 
   float h;
   float t;
@@ -805,7 +812,7 @@ int Sensor(String params) {
        // Read temperature as Celsius (the default)
       t = dht1.readTemperature();
       if (isnan(t)) { // || isnan(f)) {
-        Serial.println("Failed to read from DHT sensor!");
+        HTTP_DEBUG_PRINT("Failed to read from DHT sensor!");
         resultado = -1;
       }
       resultado = t;
@@ -816,26 +823,27 @@ int Sensor(String params) {
       // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
       h = dht1.readHumidity();
       if (isnan(h)) { // || isnan(f)) {
-        Serial.println("Failed to read from DHT sensor!");
+        HTTP_DEBUG_PRINT("Failed to read from DHT sensor!");
         resultado -1;
       }
       
-      resultado = h;
+      resultado = (int)h;
       break;
 
      default:
-      Serial.println("Llamada a relay con parametro accion incorrecto");
+      HTTP_DEBUG_PRINT("Llamada a sensor con parametro accion incorrecto");
       resultado = -1;
   }
-  
+
+  HTTP_DEBUG_PRINT("Llamada Sensor valor : " + (String)resultado);
   return resultado;
 }
-
+#endif
 
 
 int setIdDispositivo(String idDispositivo) {
   ID_DISPOSITIVO = idDispositivo;
-  Serial.print("Llega peticion" + ID_DISPOSITIVO);
+  HTTP_DEBUG_PRINT("Llega peticion" + ID_DISPOSITIVO);
   return 1;
 }
 
@@ -852,6 +860,169 @@ char* getIpReadable(IPAddress ipAddress)
  
   return myIPAddress;
 }
+
+
+#if defined (REST_CLIENT)
+int request(const char* method, const char* path,
+                  const char* body, String* response){
+
+
+  int num_headers;
+  num_headers = 0;
+  const char* headers[10];
+  const char* contentType;
+  contentType = "application/x-www-form-urlencoded";  // default
+
+  host = "192.168.0.12";
+
+  HTTP_DEBUG_PRINT("HTTP: connect\n");
+
+  if(client.connect(server,PUERTO_REST_API)){
+    HTTP_DEBUG_PRINT("HTTP: connected\n");
+    HTTP_DEBUG_PRINT("REQUEST: \n");
+    // Make a HTTP request line:
+    write(method);
+    write(" ");
+    write(path);
+    write(" HTTP/1.1\r\n");
+    for(int i=0; i<num_headers; i++){
+      write(headers[i]);
+      write("\r\n");
+    }
+    write("Host: ");
+    write(host);
+    write("\r\n");
+    write("Connection: close\r\n");
+
+    if(body != NULL){
+      char contentLength[30];
+      sprintf(contentLength, "Content-Length: %d\r\n", strlen(body));
+      write(contentLength);
+
+    write("Content-Type: ");
+    write(contentType);
+    write("\r\n");
+    }
+
+    write("\r\n");
+
+    if(body != NULL){
+      write(body);
+      write("\r\n");
+      write("\r\n");
+    }
+
+    //make sure you write all those bytes.
+    delay(100);
+
+    HTTP_DEBUG_PRINT("HTTP: call readResponse\n");
+  int statusCode = readResponse(response);
+  
+    HTTP_DEBUG_PRINT("HTTP: return readResponse\n");
+
+    //cleanup
+    HTTP_DEBUG_PRINT("HTTP: stop client\n");
+    num_headers = 0;
+    client.stop();
+    delay(50);
+    HTTP_DEBUG_PRINT("HTTP: client stopped\n");
+
+    return statusCode;
+  }else{
+    HTTP_DEBUG_PRINT("HTTP Connection failed\n");
+    return 0;
+  }
+}
+
+
+int callGet(const char* path, String* response){
+  return request("GET", path, NULL, response);
+}
+
+int callPut(const char* path, const char* body, String* response){
+  return request("PUT", path, body, response);
+}
+
+int callPost(const char* path, const char* body, String* response){
+  return request("POST", path, body, response);
+}
+
+void write(const char* string){
+  HTTP_DEBUG_PRINT(string);
+  client.print(string);
+}
+
+
+
+int readResponse(String* response) {
+
+  // an http request ends with a blank line
+  boolean currentLineIsBlank = true;
+  boolean httpBody = false;
+  boolean inStatus = false;
+
+  char statusCode[4];
+  int i = 0;
+  int code = 0;
+
+  if(response == NULL){
+    HTTP_DEBUG_PRINT("HTTP: NULL RESPONSE POINTER: \n");
+  }else{
+    HTTP_DEBUG_PRINT("HTTP: NON-NULL RESPONSE POINTER: \n");
+  }
+
+  HTTP_DEBUG_PRINT("HTTP: RESPONSE: \n");
+  while (client.connected()) {
+    HTTP_DEBUG_PRINT(".");
+
+    if (client.available()) {
+      HTTP_DEBUG_PRINT(",");
+
+      char c = client.read();
+      HTTP_DEBUG_PRINT(c);
+
+      if(c == ' ' && !inStatus){
+        inStatus = true;
+      }
+
+      if(inStatus && i < 3 && c != ' '){
+        statusCode[i] = c;
+        i++;
+      }
+      if(i == 3){
+        statusCode[i] = '\0';
+        code = atoi(statusCode);
+      }
+
+      if(httpBody){
+        //only write response if its not null
+        if(response != NULL) response->concat(c);
+      }
+      else
+      {
+          if (c == '\n' && currentLineIsBlank) {
+            httpBody = true;
+          }
+
+          if (c == '\n') {
+            // you're starting a new line
+            currentLineIsBlank = true;
+          }
+          else if (c != '\r') {
+            // you've gotten a character on the current line
+            currentLineIsBlank = false;
+          }
+      }
+    }
+  }
+}
+
+#endif
+
+
+
+
+
 
 
 

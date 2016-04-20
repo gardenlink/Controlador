@@ -85,9 +85,16 @@ app.delete('/api/sensores/:id', function(request, response){
 
 app.get('/api/sensores/:id/mediciones', function(request, response){
 
+	var  today = moment();
+    yesterday = moment(today).add(-12, 'hours');
+
 	 var filter = {
 	 			   IdTipoActuador : Number,
-	 			   IdActuador : Number
+	 			   IdActuador : Number,
+	 			   TimeStamp: {
+				      $gte: yesterday.toDate(),
+				      $lt: today.toDate()
+				   }
 	 			  };
 	 			  
 	 

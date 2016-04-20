@@ -1,3 +1,4 @@
 --reporter spec
 --recursive
 --growl
+--timeout 20000

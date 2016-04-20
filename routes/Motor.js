@@ -2,7 +2,12 @@ module.exports = function(app, moment, dataProvider, serviceProvider, logger) {
 
 var _ = require('underscore');
 
+var Medicion = require("../lib/dto/Medicion.js");
+var objMedicion = new Medicion();
+
 /* INICIO API REST */
+
+var TipoDispositivo = "MOTOR";
 
 
 app.get('/api/motores', function(request, response){
@@ -115,6 +120,31 @@ app.patch('/api/motores/:id', function(request, response) {
       }
     });
 	
+});
+
+app.get('/api/motores/:id/mediciones', function(request, response){
+
+	 var filter = {
+	 			   IdTipoActuador : Number,
+	 			   IdActuador : Number
+	 			  };
+	 			  
+	 
+	 filter.IdTipoActuador = objMedicion.GetTipoActuadorByName(TipoDispositivo);
+	 filter.IdActuador = request.params.id;
+	 
+	 dataProvider.Medicion().GetCollection(filter, function(err, data) { 
+	      if (err){
+	      	response.json(err);
+	      }
+	      else
+	      {
+		      if (data.length > 0) {
+		        response.json(data);
+		      }
+		  }
+     });
+     
 });
 
 

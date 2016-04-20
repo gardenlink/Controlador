@@ -7,6 +7,11 @@ var throwjs = require('throw.js');
 
 var _DEBUG = true;
 
+var Medicion = require("../lib/dto/Medicion.js");
+var objMedicion = new Medicion();
+
+var TipoDispositivo = "RELAY";
+
 /* INICIO API REST */
 
 
@@ -160,6 +165,31 @@ app.patch('/api/relays/:id', function(request, response) {
       }
     });
 	
+});
+
+app.get('/api/relays/:id/mediciones', function(request, response){
+
+	 var filter = {
+	 			   IdTipoActuador : Number,
+	 			   IdActuador : Number
+	 			  };
+	 			  
+	 
+	 filter.IdTipoActuador = objMedicion.GetTipoActuadorByName(TipoDispositivo);
+	 filter.IdActuador = request.params.id;
+	 
+	 dataProvider.Medicion().GetCollection(filter, function(err, data) { 
+	      if (err){
+	      	response.json(err);
+	      }
+	      else
+	      {
+		      if (data.length > 0) {
+		        response.json(data);
+		      }
+		  }
+     });
+     
 });
 
 
