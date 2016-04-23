@@ -128,6 +128,8 @@ app.post('/api/sensores/mediciones',function(request, response) {
 
 });
 
+
+
 app.get('/api/sensores/:id/temperatura', function(request, response) {
 	
 	 var idSensor = request.params.id;

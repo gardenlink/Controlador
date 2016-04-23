@@ -6,13 +6,24 @@
  *  Fecha 16-02-2016
  */
 
+//Estos modos permiten disminuir el tamaño del sketch especialmente cuando se compila para ARduino Uno.
+
+#define HTTP_DEBUG          //Comentar para deshabilitar el modo debug
+#define ENABLE_REST_CLIENT  //Comentar para deshabilitar cliente rest
+//#define ENABLE_REST_SERVER  //Comentar para deshabilitar servidor rest
+#define ENABLE_DHT          //Comentar para deshabiitar el uso de sensor DHT
 
 
+#include <SPI.h>
+#include <Ethernet.h>
+#if defined (ENABLE_DHT)
+  #include <DHT.h>
+#endif
+#if defined (ENABLE_REST_SERVER)
+  #include <aREST.h>
+#endif
 
-//#define HTTP_DEBUG          //Comentar para deshabilitar el modo debug
-//#define ENABLE_REST_CLIENT  //Comentar para deshabilitar cliente rest
-#define ENABLE_DHT        //Comentar para deshabiitar el uso de sensor DHT
-
+//Print modo debug
 #ifdef HTTP_DEBUG
 #define HTTP_DEBUG_PRINT(string) (Serial.println(string))
 #endif
@@ -21,22 +32,6 @@
 #define HTTP_DEBUG_PRINT(string)
 #endif
 
-#include <SPI.h>
-#include <Ethernet.h>
-#if defined (ENABLE_DHT)
-  #include <DHT.h>
-#endif
-#include <aREST.h>
-
-
-
-byte mac[] = { 0x90, 0xA2, 0xDA, 0x0D, 0x1F, 0x48 };
-byte ip[]      = { 192, 168,   100,  100}; 
-byte gateway[] = { 192, 168,   100,  2 };   
-byte subnet[]  = { 255, 255, 255,   0 }; 
-String IP = "192.168.100.100";  //En caso de no poder conseguir IP por DHCP, se usa esta IP.
-
-
 
 /*  Configuracion de Red: *************************************
  *  EthernetClient : Libreria Base
@@ -44,55 +39,60 @@ String IP = "192.168.100.100";  //En caso de no poder conseguir IP por DHCP, se 
  *  RestClient : Cliente para consumir servicios rest
  */
 
-//EthernetClient
+//Asignacion de IP para Ethernet Shield (en caso de que DHCP no funcione)
+byte mac[] = { 0x90, 0xA2, 0xDA, 0x0D, 0x1F, 0x48 };
+byte ip[]      = { 192, 168,   100,  100}; 
+byte gateway[] = { 192, 168,   100,  2 };   
+byte subnet[]  = { 255, 255, 255,   0 }; 
+String IP = "192.168.100.100";  //En caso de no poder conseguir IP por DHCP, se usa esta IP.
+
+
+//Configuracion de EthernetClient
 EthernetClient client;  
 char myIPAddress[20]; 
 
-//Arest
-IPAddress server(192,168,0,12);  //IP de Servidor Maestro para 
-
+//******************Arest**************************
+//IPAddress server(192,168,0,12);  //IP de Servidor Maestro para 
 // Create aREST instance
+#if defined(ENABLE_REST_SERVER)
 aREST rest = aREST();
 // Ethernet server
 EthernetServer ArduinoServer(80);
+#endif
+//******************end Arest***********************
 
 
-//RestClient
+//****************RestClient*******************
+//RestClient : Direccion en donde esta la API REST
 //RestClient restClient = RestClient("192.168.200.32",9000); 
-const char* host;
-
+const char* host = "https://afternoon-fortress-30121.herokuapp.com";
 String response; //Almacena la respuesta del cliente
+//***************end RestClient*****************
 
 
-/* Datos de Dispositivo */
+/************* Datos de Dispositivo ******************/
 #define DEVICE "002"
 #define NOMBRE "CONTROLADOR_PRINCIPAL"
 String ID_DISPOSITIVO = "002";
 
-/* Contadores para refresco de datos */
+/************ Contadores para refresco de datos ****************/
 int failedCounter = 0; //para manejo de error (al llegar a 5 se reinicia la placa)
 unsigned long lastSuccessfulUploadTime = 0; //Don't change. Used to determine if samples need to be uploaded.
 unsigned long lastSuccessfulUploadTimeDevice = 0;
 unsigned long lastSuccessfulMotorCheckTime = 0;
-
 long updateFrequency = 60000UL;    // Update frequency in milliseconds (20000 = 20 seconds). Change this to change your sample frequency.
 long updateFrequencyDevice = 60000;
 long updateFrequencyMotor = 5000;
 
+/***************** SENSORES **************************/
 #if defined (ENABLE_DHT)
-/* SENSORES */
-
-
-#define SENSOR_DHT 8    
+#define SENSOR_DHT 8    //pin 8    
 #define DHTTYPE DHT11   // DHT 11
-//#define DHTTYPE DHT22   // DHT 22  (AM2302)
-//#define DHTTYPE DHT21   // DHT 21 (AM2301)
 
 #define N_SENSORES 1
-String Sensores[N_SENSORES] = {"DHT"};
+String Sensores[N_SENSORES] = {"1"}; //PIN
 
 DHT dht1(SENSOR_DHT, DHTTYPE);
-//DHT dht2(9,DHTTYPE);
 
 #endif
 
@@ -145,8 +145,6 @@ int posicion_m4;
 void setup()
 {
 
-  
-
   //Configuracion de Motores:
    pinMode(M1, OUTPUT);   
    pinMode(M2, OUTPUT); 
@@ -163,25 +161,25 @@ void setup()
    posicion_m3 = 0;
    posicion_m4 = 0;
    
-  //Servicios expuestos en la placa
+  //Servicios rest expuestos en la placa
 
-  rest.set_name("001");
-  rest.set_id("001");
+  #if defined(ENABLE_REST_SERVER)
+    rest.set_name("001");
+    rest.set_id("001");
+    
+    //Motores
+    rest.function("Motor",Motor); //Acciones con Motores de ventanas
+    
+    //Sensores
+    #if defined (ENABLE_DHT)
+    dht1.begin();
+    rest.function("Sensor", Sensor);
+    #endif
+    //rest.function("IdDispositivo", setIdDispositivo);
   
-  //Motores
-  rest.function("Motor",Motor); //Acciones con Motores de ventanas
-  
-  //Sensores
-  #if defined (ENABLE_DHT)
-  dht1.begin();
-  rest.function("Sensor", Sensor);
+    //Relays
+    rest.function("Relay", Relay);
   #endif
-//  rest.function("IdDispositivo", setIdDispositivo);
-
-  //Relays
-  rest.function("Relay", Relay);
-  
-  
 
   #if defined(HTTP_DEBUG)
     Serial.begin(9600); 
@@ -191,8 +189,6 @@ void setup()
     HTTP_DEBUG_PRINT("Modo Liviano Activado, las funciones no entregan resultados");
   #endif
 
-  
-  
   iniciarEthernet();
   delay(1000);
 }
@@ -202,11 +198,12 @@ void loop()
 { 
 
    // Esperando por nuevos clientes
-  EthernetClient client = ArduinoServer.available();
-  rest.handle(client);
+   #if defined(ENABLE_REST_SERVER)
+    EthernetClient client = ArduinoServer.available();
+    rest.handle(client);
+  #endif
   
-  
-  //Reportar al master
+  //Reportar este dispositivo al master
   if (millis() - lastSuccessfulUploadTimeDevice > updateFrequencyDevice)
   {
       #if defined (REST_CLIENT)
@@ -221,44 +218,25 @@ void loop()
   {
     
     for (int i=0; i<N_SENSORES;i++) {
+       #if defined (REST_CLIENT)
+       HTTP_DEBUG_PRINT("Lectura Sensor");
+       actualizarSensores(Sensores[i]);
+       #endif
        
-       //actualizarSensores(Sensores[i],leerSensor(Sensores[i]));
-       
-       //delay(1000);
+       delay(1000);
     }
   }
   #endif
+  
   //Revisar motores
   if (millis() - lastSuccessfulMotorCheckTime > updateFrequencyMotor)
   {
-      HTTP_DEBUG_PRINT("Entra CehckMotor");
-      //RevisarMotores();
+      //HTTP_DEBUG_PRINT("Entra CehckMotor");
+      RevisarMotores();
       delay(1000);
   }
-
 }
 
-
-
-
-void manejarErrorConexion() {
-  //Connection failed. Increase failed counter
-  failedCounter++;
- 
-  HTTP_DEBUG_PRINT(F("La conexion a BotanicBot fallo "));
-  HTTP_DEBUG_PRINT(failedCounter);  
-  HTTP_DEBUG_PRINT(F(" vez"));
-  delay(1000);
-     
-  // Check if Arduino Ethernet needs to be restarted
-  if (failedCounter > 5 )
-  {
-    //Too many failures. Restart Ethernet.
-    HTTP_DEBUG_PRINT(F("Despues de 3 reintentos, reinicio ethernet "));
-    iniciarEthernet();
-  }
- 
- }
 
 
 void iniciarEthernet()
@@ -296,9 +274,10 @@ void iniciarEthernet()
     subscribirDispositivo(IP);
   #endif
 
-  ArduinoServer.begin();
+  #if defined (ENABLE_REST_SERVER)
+    ArduinoServer.begin();
+  #endif
   HTTP_DEBUG_PRINT("Servidor corriendo en:  " + IP);
- 
 }
 
 #if defined(REST_CLIENT)
@@ -319,8 +298,6 @@ void subscribirDispositivo(String ip) {
   char pPath[spath.length()+1];
   spath.toCharArray(pPath, sizeof(pPath));
 
-  
-
   //Llamada a servicio 
   int statusCode = callPut(pPath, pBody,  &response);
   statusCode = 200;
@@ -328,7 +305,6 @@ void subscribirDispositivo(String ip) {
   bool SubscripcionOk = false;
   int failedCounter = 1;
   
-
   while(SubscripcionOk == false && failedCounter < 6)
   {
      
@@ -745,34 +721,35 @@ int mapAnalogPin(char Pin) {
 /* CODIGO PARA MANEJO DE SENSORES */
 
 #if defined (ENABLE_DHT)
-/*
-int leerSensor(String idSensor)
-{
-  int valor;
-  if (idSensor == "DHT")
-  {
-     float t = dht1.readTemperature();
+
+
+void actualizarSensores(String idSensor) {
   
-     if (isnan(t)) { // || isnan(f)) {
-      HTTP_DEBUG_PRINT("Failed to read from DHT sensor!");
-      return -1;
-     }
-     valor = t;
-  }
-  else
-  {
-    if (idSensor == "1")
-      valor = 90;
-    else
-      valor = 95;
-  }
+  //restClient.setContentType("application/x-www-form-urlencoded");
+  //restClient.setHeader("User-Agent: Arduino/1.0");
+
+  //LEer sensoeres
+  String accion = "T";
+  int valor = 0;
+
+  valor = Sensor(accion + idSensor);
 
   
+  String param = "IdSensor=" + idSensor + " IdDispositivo=" + (String)ID_DISPOSITIVO + " Valor=" + (String)valor;
+  
+  char pBody[param.length()+1];
+  param.toCharArray(pBody, sizeof(pBody));  
 
-  return valor;
+  //id Dispositivo
+  String spath = "/api/sensores/mediciones";
+  char pPath[spath.length()+1];
+  spath.toCharArray(pPath, sizeof(pPath));
+  
+  //Llamada a servicio 
+  int statusCode = callPut(pPath, pBody, &response);
+  statusCode = 200;
+ 
 }
-
-*/
 
 //Servicio para manejo de sensores
 //Parametros:
@@ -862,6 +839,27 @@ char* getIpReadable(IPAddress ipAddress)
 }
 
 
+void manejarErrorConexion() {
+  //Connection failed. Increase failed counter
+  failedCounter++;
+ 
+  HTTP_DEBUG_PRINT(F("La conexion a BotanicBot fallo "));
+  HTTP_DEBUG_PRINT(failedCounter);  
+  HTTP_DEBUG_PRINT(F(" vez"));
+  delay(1000);
+     
+  // Check if Arduino Ethernet needs to be restarted
+  if (failedCounter > 5 )
+  {
+    //Too many failures. Restart Ethernet.
+    HTTP_DEBUG_PRINT(F("Despues de 3 reintentos, reinicio ethernet "));
+    iniciarEthernet();
+  }
+ 
+ }
+
+
+
 #if defined (REST_CLIENT)
 int request(const char* method, const char* path,
                   const char* body, String* response){
@@ -873,11 +871,11 @@ int request(const char* method, const char* path,
   const char* contentType;
   contentType = "application/x-www-form-urlencoded";  // default
 
-  host = "192.168.0.12";
+  
 
   HTTP_DEBUG_PRINT("HTTP: connect\n");
 
-  if(client.connect(server,PUERTO_REST_API)){
+  if(client.connect(host,PUERTO_REST_API)){
     HTTP_DEBUG_PRINT("HTTP: connected\n");
     HTTP_DEBUG_PRINT("REQUEST: \n");
     // Make a HTTP request line:
@@ -943,8 +941,17 @@ int callPut(const char* path, const char* body, String* response){
   return request("PUT", path, body, response);
 }
 
+
 int callPost(const char* path, const char* body, String* response){
   return request("POST", path, body, response);
+}
+
+int callPost(const char* path, const char* body) {
+  return request("POST", path, body,NULL);
+}
+
+int callPatch(const char* path, const char* body, String* response) {
+  return request("PATCH", path, body, response);
 }
 
 void write(const char* string){
