@@ -65,7 +65,7 @@ EthernetServer ArduinoServer(80);
 //****************RestClient*******************
 //RestClient : Direccion en donde esta la API REST
 //RestClient restClient = RestClient("192.168.200.32",9000); 
-const char* host = "https://afternoon-fortress-30121.herokuapp.com";
+const char* host = "https://gardenlink.herokuapp.com";
 String response; //Almacena la respuesta del cliente
 //***************end RestClient*****************
 
