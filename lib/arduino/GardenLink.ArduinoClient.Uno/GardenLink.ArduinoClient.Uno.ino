@@ -10,9 +10,10 @@
 
 #define HTTP_DEBUG          //Comentar para deshabilitar el modo debug
 #define ENABLE_REST_CLIENT  //Comentar para deshabilitar cliente rest
-//#define ENABLE_REST_SERVER  //Comentar para deshabilitar servidor rest
+#define ENABLE_REST_SERVER  //Comentar para deshabilitar servidor rest
 #define ENABLE_DHT          //Comentar para deshabiitar el uso de sensor DHT
-
+#define IS_MEGA_BOARD       
+//#define IS_UNO_BOARD
 
 #include <SPI.h>
 #include <Ethernet.h>
@@ -65,7 +66,9 @@ EthernetServer ArduinoServer(80);
 //****************RestClient*******************
 //RestClient : Direccion en donde esta la API REST
 //RestClient restClient = RestClient("192.168.200.32",9000); 
-const char* host = "https://gardenlink.herokuapp.com";
+//const char* host = "http://gardenlink.cl";
+const char* host = "192.168.200.32";
+int PUERTO_REST_API = 9000;
 String response; //Almacena la respuesta del cliente
 //***************end RestClient*****************
 
@@ -80,8 +83,8 @@ int failedCounter = 0; //para manejo de error (al llegar a 5 se reinicia la plac
 unsigned long lastSuccessfulUploadTime = 0; //Don't change. Used to determine if samples need to be uploaded.
 unsigned long lastSuccessfulUploadTimeDevice = 0;
 unsigned long lastSuccessfulMotorCheckTime = 0;
-long updateFrequency = 60000UL;    // Update frequency in milliseconds (20000 = 20 seconds). Change this to change your sample frequency.
-long updateFrequencyDevice = 60000;
+long updateFrequency = 20000UL;    // Update frequency in milliseconds (20000 = 20 seconds). Change this to change your sample frequency.
+long updateFrequencyDevice = 20000;
 long updateFrequencyMotor = 5000;
 
 /***************** SENSORES **************************/
@@ -89,8 +92,8 @@ long updateFrequencyMotor = 5000;
 #define SENSOR_DHT 8    //pin 8    
 #define DHTTYPE DHT11   // DHT 11
 
-#define N_SENSORES 1
-String Sensores[N_SENSORES] = {"1"}; //PIN
+#define N_SENSORES 2
+String Sensores[N_SENSORES] = {"DHT1","ANAA15"}; //PIN
 
 DHT dht1(SENSOR_DHT, DHTTYPE);
 
@@ -206,7 +209,7 @@ void loop()
   //Reportar este dispositivo al master
   if (millis() - lastSuccessfulUploadTimeDevice > updateFrequencyDevice)
   {
-      #if defined (REST_CLIENT)
+      #if defined (ENABLE_REST_CLIENT)
       subscribirDispositivo(IP);
       #endif
       delay(1000);
@@ -218,9 +221,14 @@ void loop()
   {
     
     for (int i=0; i<N_SENSORES;i++) {
-       #if defined (REST_CLIENT)
+       #if defined (ENABLE_REST_CLIENT)
        HTTP_DEBUG_PRINT("Lectura Sensor");
-       actualizarSensores(Sensores[i]);
+       String tipo = Sensores[i].substring(0,3);
+       String idSensor = Sensores[i].substring(3,Sensores[i].length());
+
+       HTTP_DEBUG_PRINT("tipo Sensor: " + tipo + " ID: "  + idSensor);
+       
+       actualizarSensores(tipo, idSensor);
        #endif
        
        delay(1000);
@@ -270,7 +278,7 @@ void iniciarEthernet()
     HTTP_DEBUG_PRINT();
   }
 
-  #if defined (REST_CLIENT)
+  #if defined (ENABLE_REST_CLIENT)
     subscribirDispositivo(IP);
   #endif
 
@@ -280,11 +288,14 @@ void iniciarEthernet()
   HTTP_DEBUG_PRINT("Servidor corriendo en:  " + IP);
 }
 
-#if defined(REST_CLIENT)
+#if defined(ENABLE_REST_CLIENT)
 //Reportar la IP de este dispositivo al master (raspberry)
 void subscribirDispositivo(String ip) {
   unsigned long connectAttemptTime = millis();
   unsigned long frecuencia = 60000UL;
+
+  HTTP_DEBUG_PRINT("Inicio Subscripcion de dispositivo");
+  
   //restClient.setContentType("application/x-www-form-urlencoded");
   //restClient.setHeader("User-Agent: Arduino/1.0");
 
@@ -320,7 +331,14 @@ void subscribirDispositivo(String ip) {
     }
     else
     {
+      
+      #if defined (HTTP_DEBUG)
+      frecuencia = 60000UL;
+      #else
       frecuencia = 600000UL;
+      #endif
+
+      
       SubscripcionOk = false;
       failedCounter++;
     }
@@ -339,6 +357,7 @@ void subscribirDispositivo(String ip) {
   response="";
   SubscripcionOk = true;
 
+  HTTP_DEBUG_PRINT("Frecuencia de actualizacion de sensores.." + frecuencia);
   updateFrequency = frecuencia;
  
 }
@@ -661,6 +680,36 @@ int Relay(String params) {
 
 }
 
+int mapAnalogPinString(String Pin)
+{
+  int analogPin;
+
+    if (Pin == "A10") {
+      return A10;
+    }
+
+    if (Pin == "A11") { 
+      return A11;
+    }
+
+    if (Pin == "A12") {
+      return A12;
+    }
+
+    if (Pin == "A13") {
+      return A13;
+    }
+
+    if (Pin == "A14") {
+      return A14;
+    }
+
+    if (Pin == "A15") {
+      return A15;
+    }
+
+}
+
 int mapAnalogPin(char Pin) {
   
 
@@ -700,8 +749,9 @@ int mapAnalogPin(char Pin) {
       analogPin = A7;
       break;
 
-    //only for mega
-    /*
+    #if defined (IS_MEGA_BOARD)
+    
+    
      case '8':
       analogPin = A8;
       break;
@@ -709,10 +759,32 @@ int mapAnalogPin(char Pin) {
       case '9':
         analogPin =A9;
         break;
-      */
+
+      case '10':
+        analogPin =A10;
+        break;
+
+      case '11':
+        analogPin =A11;
+        break;
+
+      case '12':
+        analogPin =A12;
+        break;
+
+      case '13':
+        analogPin =A13;
+        break;
+
+      case '14':
+        analogPin =A14;
+        break;
+      #endif
+      
       default:
         analogPin = -1;
         break;
+       
   }
   return analogPin;
 }
@@ -723,32 +795,50 @@ int mapAnalogPin(char Pin) {
 #if defined (ENABLE_DHT)
 
 
-void actualizarSensores(String idSensor) {
+void actualizarSensores(String tipo, String idSensor) {
   
   //restClient.setContentType("application/x-www-form-urlencoded");
   //restClient.setHeader("User-Agent: Arduino/1.0");
 
   //LEer sensoeres
-  String accion = "T";
-  int valor = 0;
 
-  valor = Sensor(accion + idSensor);
+    int valor = 0;
+    String pinSensor;
+  
+    if (tipo == "DHT") {
+  
+      
+        String accion = "T";  
+        valor = Sensor(accion + idSensor);
+    }
+    else if (tipo == "ANA") {
+     
+        pinSensor = idSensor;
+        valor = analogRead(mapAnalogPinString(pinSensor));
+    }
+    else
+    {
+        pinSensor = idSensor;
+        valor = digitalRead(pinSensor.toInt());
+        
+    }
 
+      HTTP_DEBUG_PRINT("Actualizando lectura de sensor tipo : " + tipo + " Id : " + pinSensor + " Valor Lectura : " + (String)valor);
+      String param = "IdSensor=" + idSensor + " IdDispositivo=" + (String)ID_DISPOSITIVO + " Valor=" + (String)valor;
+      
+      char pBody[param.length()+1];
+      param.toCharArray(pBody, sizeof(pBody));  
+    
+      //id Dispositivo
+      String spath = "/api/sensores/mediciones";
+      char pPath[spath.length()+1];
+      spath.toCharArray(pPath, sizeof(pPath));
+      
+      //Llamada a servicio 
+      int statusCode = callPut(pPath, pBody, &response);
+      statusCode = 200;
   
-  String param = "IdSensor=" + idSensor + " IdDispositivo=" + (String)ID_DISPOSITIVO + " Valor=" + (String)valor;
   
-  char pBody[param.length()+1];
-  param.toCharArray(pBody, sizeof(pBody));  
-
-  //id Dispositivo
-  String spath = "/api/sensores/mediciones";
-  char pPath[spath.length()+1];
-  spath.toCharArray(pPath, sizeof(pPath));
-  
-  //Llamada a servicio 
-  int statusCode = callPut(pPath, pBody, &response);
-  statusCode = 200;
- 
 }
 
 //Servicio para manejo de sensores
@@ -860,7 +950,7 @@ void manejarErrorConexion() {
 
 
 
-#if defined (REST_CLIENT)
+#if defined (ENABLE_REST_CLIENT)
 int request(const char* method, const char* path,
                   const char* body, String* response){
 

@@ -83,37 +83,80 @@ app.delete('/api/sensores/:id', function(request, response){
 });
 
 
+// Llamada para obtener el ultimo registro
+// http://localhost:9000/api/sensores/1/mediciones?last=true&sorttype=_id&sortdirection=desc
+// criteria can be asc, desc, ascending, descending, 1, or -1
+
 app.get('/api/sensores/:id/mediciones', function(request, response){
 
 	var  today = moment();
     yesterday = moment(today).add(-12, 'hours');
-
+    
+    var returnLast = false;
+    var sortObject= null;
+    
+    if (request.query.last == true || request.query.last == "true"){
+    	console.log("LAST");
+     	returnLast = request.query.last;
+     	
+     	sortObject = {};
+		var stype = request.query.sorttype;
+		var sdir = request.query.sortdirection;
+		sortObject[stype] = sdir;
+    }
+    
 	 var filter = {
 	 			   IdTipoActuador : Number,
-	 			   IdActuador : Number,
-	 			   TimeStamp: {
-				      $gte: yesterday.toDate(),
-				      $lt: today.toDate()
-				   }
+	 			   IdActuador : Number
 	 			  };
 	 			  
 	 
 	 filter.IdTipoActuador = objMedicion.GetTipoActuadorByName(TipoDispositivo);
 	 filter.IdActuador = request.params.id;
 	 
-	 dataProvider.Medicion().GetCollection(filter, function(err, data) { 
+	 
+	 if (returnLast)
+	 {
+	 	filter.sortObject = sortObject ? sortObject : null;
+	 	
+	 	dataProvider.Medicion().GetLast(filter, function(err, data) { 
 	      if (err){
 	      	response.json(err);
 	      }
 	      else
 	      {
-		      if (data.length > 0) {
-		        response.json(data);
-		      }
+	      	console.log(data);
+		    response.json(data);
 		  }
-     });
+     	});
+	 }
+	 else
+	 {
+	 	dataProvider.Medicion().GetCollection(filter, function(err, data) { 
+	      if (err){
+	      	response.json(err);
+	      }
+	      else
+	      {
+		    response.json(data);
+		  }
+     	});
+	 }
+	 
+	 
+	 
      
 });
+
+
+
+app.get('/api/sensores/:id/mediciones/:id', function(request, response){
+	var params = request.params.id;
+	var p = request.query;
+	console.log(params);
+	console.log(p);
+});
+
 
 
 
@@ -144,7 +187,6 @@ app.get('/api/sensores/:id/temperatura', function(request, response) {
 	        		console.dir("error: /api/sensores/:id/temperatura -> detalle : " + error);
 	        	} else
 	        	{
-		        	console.log(res);
 		        	response.json(res);
 	        	}
 	        });
