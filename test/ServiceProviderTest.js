@@ -26,9 +26,9 @@ describe('Motor', function() {
     var environment = "debug";
     var config = require("../config.json")[environment];
     dataProvider = new DataProvider(logger, config, null);
-	serviceProvider = new ServiceProvider(dataProvider, logger, function(err, data){  });
-    
+	serviceProvider = new ServiceProvider(dataProvider, logger, function(err, data){   });
     done();
+   
     						
     
   });

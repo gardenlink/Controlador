@@ -107,7 +107,7 @@ app.delete('/api/dispositivos/:id', function(request, response){
  * @api {put} /api/dispositivos/:id/ip Modifica la property ip
  * @apiSuccess {json} ok
  */
-app.put('/api/dispositivos/:id/ip', function(request, response) {
+app.put('/api/dispositivos/:id/subscripcion', function(request, response) {
 	var id = request.params.id;
     var ip = request.body.ip;
     var estado = true;
@@ -117,13 +117,13 @@ app.put('/api/dispositivos/:id/ip', function(request, response) {
     
     dataProvider.Device().Find(filter, function(err, data) { 
       if (err){
-      	console.log("/api/dispositivos/:id/ip --> Error: " + err);
-      	throw new Error(err);
+      	console.log("/api/dispositivos/:id/subscripcion --> Error: " + err);
       }
       
       if (data) {
       	console.log("Llega peticion -> valor: " + data.FrecuenciaMuestreo);
         dataProvider.Device().Save(data.Id, data.Nombre, data.Tipo, ip,data.Puerto,data.Habilitado,estado, data.FrecuenciaMuestreo);
+        var payload = data.FrecuenciaMuestreo + "-" + data.FrecuenciaMuestreo;
         response.json(data.FrecuenciaMuestreo);
       }
       else{
@@ -132,81 +132,6 @@ app.put('/api/dispositivos/:id/ip', function(request, response) {
     });
 });
 
-
-
-app.put('/Dispositivo/SubscribirDispositivo/:id', function (request, response) {
-    var id = request.params.id;
-    var key = request.body.key;
-    var ip = request.body.ip;
-    console.log("Llega peticion de subscripcion desde dispositivo: " + id + " con IP : " + ip);
-    console.log("Obteniendo informacion del dispositivo..");
-
-    //this.arduinoService = new ArestLibrary(ip + ':' + "9000");
-    //this.arduinoService.boardInfo(id,  function(data) { console.log(data); });
-
-    //sensorProvider.Save(sensor, valor);
-    var filter = {Id : String};
-    filter.Id = id;
-    
-
-    dataProvider.Device().Find(filter, function(err, data) { 
-      if (data.length > 0) {
-        dataProvider.Device().Save(data[0].Id, data[0].Nombre, data[0].Tipo, ip,data[0].Puerto,data[0].Habilitado,true);
-        response.json(data);
-      }
-      else{
-        response.json("");
-      }
-    });
-    
-});
-
-app.put('/Dispositivo/NotificarEstado/:id', function (request, response) {
-    var id = request.params.id;
-    var key = request.body.key;
-    var ip = request.body.ip;
-    console.log("Llega notificacion de estado de dispositivo: " + id + " con IP : " + ip);
-    
-
-    //this.arduinoService = new ArestLibrary(ip + ':' + "9000");
-    //this.arduinoService.boardInfo(id,  function(data) { console.log(data); });
-
-    //sensorProvider.Save(sensor, valor);
-    var filter = {Id : String};
-    filter.Id = id;
-    
-    dataProvider.Device().Find(filter, function(err, data) { 
-      if (data.length > 0) {
-        dataProvider.Device().Save(data[0].Id, data[0].Nombre, data[0].Tipo, ip,data[0].Puerto,data[0].Habilitado,true);
-      }
-    });
-    
-    //dataProvider.Device().GetAll(function(err, data) {
-     // console.log(data);
-     // });
-    
-    response.json("Ok");  
-});
-
-app.get('/Dispositivo/ConsultarEstado/:id', function (request, response) {
-    var dispositivo = request.params.id;
-
-    var filter = {Id : String};
-    filter.Id = dispositivo;
-    //var valor = request.body.valor;
-    console.log("llega consulta de estado para dispositivo " + dispositivo);
-    dataProvider.Device().Find(filter, function(err, data) { 
-      if (data.length > 0) {
-        console.log(data);
-
-        response.json(data[0].FrecuenciaMuestreo);
-      }
-      else
-      {
-        response.json("No existen dispositivos");
-      }
-    });
-});
 
 app.get('/api/dispositivos/:id/ping', function(request, response) {
 

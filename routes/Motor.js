@@ -1,5 +1,6 @@
 module.exports = function(app, moment, dataProvider, serviceProvider, logger) {
 
+
 var _ = require('underscore');
 
 var Medicion = require("../lib/dto/Medicion.js");
@@ -95,29 +96,87 @@ app.patch('/api/motores/:id', function(request, response) {
     filter.IdMotor = idMotor;
     dataProvider.Motor().Find(filter, function(err, data) { 
       if (data) {
-      	//Campo modificado
-      	data[path] = valor;
-        
-         dataProvider.Motor().Save(idMotor, 
-    						   data.IdDispositivo,
-    						   data.Descripcion,
-    						   data.MarcaModelo,
-    						   data.Tipo,
-    						   data.Pin,
-    						   data.EsPinAnalogo,
-    						   data.Habilitado,
-    						   data.Posicion,
-    						   data.Accion,
-    						   data.Estado
-    						   );
-    						   
-  		response.json(data);
+      	
+      	
+      	//Si el cambio es para manipular el estado del motor, llamo al servicio de Arduino
+      	if (path == "Accion") {
+      		//var activo = helper.toBoolean(valor);
+      		
+      		
+      			console.log("PATCH: /api/motores/id --> path : " + path + " valor de parametro : " + valor);
+      			
+      			
+      			serviceProvider.Motor().ReporteMotor(data.IdDispositivo, data.IdMotor, function(error, data) {
+      			
+      			  	if (error)
+		            {
+		                logger.error("MonitorSalud.Motor(): Error al verificar Motor, detalle: " + error);
+		                console.log("MonitorSalud.Motor(): Error al verificar Motor, detalle: " + error);
+		                response.json(error);
+		            }
+		            else
+		            {
+		            
+		            switch (valor)
+	      			{
+	      				case "Avanzar":
+	      					serviceProvider.Motor().Avanzar(data.IdDispositivo, data.IdMotor, function(error, data) {});
+	      					break;
+	      				
+	      				case "Retroceder":
+	      					serviceProvider.Motor().Retroceder(data.IdDispositivo, data.IdMotor, function(error, data) {});
+	      					break;
+	      				
+	      				case "Detener":
+	      					serviceProvider.Motor().Detener(data.IdDispositivo, data.IdMotor, function(error, data) {});
+	      					break;
+	      				case "Estado":
+	      					serviceProvider.Motor().Estado(data.IdDispositivo, data.IdMotor, function(error, data) {});
+	      					break;
+	      				
+	      				case "Posicion":
+	      					serviceProvider.Motor().Posicion(data.IdDispositivo, data.IdMotor, function(error, data) {});
+	      					break;
+	      			}
+		            
+		              //TODO: agregar atributo IdTipoActuador en dto Sensor
+		              
+		              //Campo modificado
+      				  data[path] = valor;
+      	
+      	
+		              dataProvider.Motor().Save( 
+		              		data.IdMotor
+						  , data.IdDispositivo
+						  , data.Descripcion
+						  , data.MarcaModelo
+						  , data.Tipo
+						  , data.Pin
+						  , data.EsPinAnalogo
+						  , data.Habilitado
+						  , data.Posicion
+						  , data.Accion
+						  , data.Estado); //TODO: Revisar por que puede ir undefined
+						  
+					  dataProvider.Medicion().Save(
+					  	3,
+					  	data.IdMotor, 
+					  	data.IdDispositivo,
+					  	data.Posicion
+					  );
+		              
+		            }
+		            
+		            response.json(data);
+
+      			});
         
       }
       else
       {
       	response.send("");
       }
+    }
     });
 	
 });

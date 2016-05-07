@@ -256,7 +256,7 @@ require("./routes/TipoActuador")(app, dataProvider, logger);
 
 console.log("./routes/Motor");
 logger.info("./routes/Motor");
-require('./routes/Motor.js')(app, moment, dataProvider, logger);
+require('./routes/Motor.js')(app, moment, dataProvider,serviceProvider, logger);
 
 console.log("./routes/Estados");
 logger.info("./routes/Estados");
