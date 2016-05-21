@@ -262,6 +262,10 @@ console.log("./routes/Estados");
 logger.info("./routes/Estados");
 require('./routes/Estados.js')(app, logger);
 
+console.log("./routes/Console");
+logger.info("./routes/Console");
+require('./routes/Console.js')(app);
+
 
 
 

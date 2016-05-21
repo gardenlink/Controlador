@@ -1,0 +1,66 @@
+<!DOCTYPE HTML>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+ 	<script src="lib/js/jquery/jquery.js"></script>
+	<script src="lib/js/jquery.terminal/jquery.terminal.min.js"></script>
+	<script src="http://localhost:8090/socket.io/socket.io.js"></script>
+	
+	<script src="lib/js/jquery.terminal/jquery.mousewheel-min.js"></script>
+	
+	<link href="lib/js/jquery.terminal/jquery.terminal.min.css" rel="stylesheet"/>
+	
+	
+	 <script>
+	//var socket = io.connect('http://localhost:8090');
+	
+	$(function() {
+		var socket = io.connect('http://localhost:8090');
+	      var terminal = $('#terminal').terminal(function(command, terminal) {
+	        socket.emit('message', command);
+	      },
+	      {
+	          greetings: 'Welcome'
+	        , prompt: 'shell $>'
+	        , exit: false
+	      });
+	      socket.on('console-response', function(data) {
+	        terminal.echo(String(data));
+	      });
+	      /*
+	      socket.on('stderr', function(data) {
+	        terminal.error(String(data));
+	      });
+	      socket.on('disconnect', function() {
+	        terminal.disable();
+	      });
+	      socket.on('enable', function() {
+	        terminal.enable();
+	      });
+	      socket.on('disable', function() {
+	        terminal.disable();
+	      });*/
+	    });
+	
+   /*
+	jQuery(document).ready(function($) {
+        $('body').terminal(function(command, terminal) {
+        	socket.emit('message', command);
+        	}, {
+            login: false,
+            greetings: "You are authenticated",
+            onBlur: function() {
+                // the height of the body is only 2 lines initialy
+                
+                return false;
+            },
+        });
+        socket.on("console-response", function(data) {
+        	terminal.echo(String(data));
+        });
+    });
+   */
+    </script>
+</head>
+<body id="terminal">
+</body>

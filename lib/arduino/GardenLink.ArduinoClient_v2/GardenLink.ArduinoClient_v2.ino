@@ -8,23 +8,28 @@
 
 //Estos modos permiten disminuir el tamaÃ±o del sketch especialmente cuando se compila para ARduino Uno.
 
-#define HTTP_DEBUG          //Comentar para deshabilitar el modo debug del cliente rest
-#define GENERAL_DEBUG
-//#define ENABLE_REST_CLIENT  //Comentar para deshabilitar cliente rest
+//#define HTTP_DEBUG          //Comentar para deshabilitar el modo debug del cliente rest
+//#define GENERAL_DEBUG
+#define ENABLE_REST_CLIENT  //Comentar para deshabilitar cliente rest
 #define ENABLE_REST_SERVER  //Comentar para deshabilitar servidor rest
 //#define ENABLE_DHT          //Comentar para deshabiitar el uso de sensor DHT
-#define IS_MEGA_BOARD
-//#define IS_UNO_BOARD
+//#define IS_MEGA_BOARD
+#define IS_UNO_BOARD
 
-#include <SPI.h>
-#include <Ethernet.h>
+#if (defined ENABLE_REST_CLIENT) || (defined ENABLE_REST_SERVER)
+  #include <SPI.h>
+  #include <Ethernet.h>
+#endif
+
 #if defined (ENABLE_DHT)
-#include <DHT.h>
+  #include <Sensores.h>
 #endif
+
 #if defined (ENABLE_REST_SERVER)
-#include <aREST.h>
+  #include <aREST.h>
 #endif
-#include <Bombas.h>
+
+//#include <Actuador.h>
 
 //Print modo debug
 #ifdef HTTP_DEBUG
@@ -44,6 +49,8 @@
 #endif
 
 
+#if (defined ENABLE_REST_CLIENT) || (defined ENABLE_REST_SERVER)
+
 /*  Configuracion de Red: *************************************
  *  EthernetClient : Libreria Base
  *  aREst : Servidor web para exponer api rest en arduino
@@ -62,6 +69,8 @@ String IP = "192.168.100.100";  //En caso de no poder conseguir IP por DHCP, se 
 EthernetClient client;
 char myIPAddress[20];
 
+#endif
+
 //******************Arest**************************
 //IPAddress server(192,168,0,12);  //IP de Servidor Maestro para
 // Create aREST instance
@@ -73,22 +82,24 @@ EthernetServer ArduinoServer(80);
 //******************end Arest***********************
 
 
+#if (defined ENABLE_REST_CLIENT)
 //****************RestClient*******************
 //RestClient : Direccion en donde esta la API REST
 //RestClient restClient = RestClient("192.168.200.32",9000);
 //const char* host = "http://gardenlink.cl";
-//const char* host = "192.168.200.32";
-char host[] = "192.168.200.32"; 
+const char* host = "192.168.0.13";
+//char host[] = "192.168.200.32"; 
 //const char* host = "192.168.0.12";
-int PUERTO_REST_API = 9000;
+int PUERTO_REST_API = 80;
 String response; //Almacena la respuesta del cliente
 //***************end RestClient*****************
 
+#endif
 
 /************* Datos de Dispositivo ******************/
-#define DEVICE "001"
+#define DEVICE "002"
 #define NOMBRE "CONTROLADOR_PRINCIPAL"
-String ID_DISPOSITIVO = "001";
+String ID_DISPOSITIVO = "002";
 
 /************ Contadores para refresco de datos ****************/
 int failedCounter = 0; //para manejo de error (al llegar a 5 se reinicia la placa)
@@ -103,95 +114,33 @@ long updateFrequencyPump = 4000;
 
 /***************** SENSORES **************************/
 #if defined (ENABLE_DHT)
-#define SENSOR_DHT 8    //pin 8    
-#define DHTTYPE DHT11   // DHT 11
-
-#define N_SENSORES 2
-String Sensores[N_SENSORES] = {"DHT1", "ANAA15"}; //PIN
-
-DHT dht1(SENSOR_DHT, DHTTYPE);
-
+#define SENSOR_DHT_PIN 8    //pin 8    
+#define N_SENSORES 3
+Sensores arrSensores[N_SENSORES] = {  Sensores(1, SENSOR_DHT_PIN, "DHT", 'T'), //Sensor DHT Temperatura
+                                      Sensores(2, SENSOR_DHT_PIN, "DHT", 'H'),  //Sensor DHT Humedad
+                                      Sensores(3, 3, "ANALOGO") };              //Sensor Analogo Nivel en pin 3
+  
 #endif
 
-/* Controlador Motores
- *
- * #Connection:
-   #        M1 pin  -> Digital pin 6
-   #        E1 pin  -> Digital pin 7
-   #        M2 pin  -> Digital pin 4
-   #        E2 pin  -> Digital pin 5
-   #        Motor Power Supply -> Centor blue screw connector(5.08mm 3p connector)
-   #        Motor A  ->  Screw terminal close to E1 driver pin
-   #        Motor B  ->  Screw terminal close to E2 driver pin
-   #
-   # Note: You should connect the GND pin from the DF-MD v1.3 to your MCU controller. They should share the GND pins.
-   #
-*/
-
-int E1 = 7;
-int M1 = 6;
-int E2 = 5;
-int M2 = 4;
-
-//Estdaos:
-// 0.- Detenido
-// 1.- Subiendo
-// 2.- Bajando
-
-
-int estado_m1;
-int estado_m2;
-int estado_m3;
-int estado_m4;
-
-
-// Posiciones:
-// 0.- Cerrado
-// 1.- 25%
-// 2.- 50%
-// 3.- 75%
-// 4.- 100%
-
-
-int posicion_m1;
-int posicion_m2;
-int posicion_m3;
-int posicion_m4;
-
+//Actuador actuador;
 
 /* Configuracion Bombas 
  *  
  *  
 */
-//Bombas
-Bombas  bomba1;
-Bombas  bomba2;
 
 void setup()
 {
 
   //Config bomba
-  bomba1.SetId(1);
-  bomba1.SetPin(A1);
-  bomba2.SetId(2);
-  bomba2.SetPin(A2);
+
   
 
-  //Configuracion de Motores:
-  pinMode(M1, OUTPUT);
-  pinMode(M2, OUTPUT);
-
-
-  estado_m1 = 0;
-  estado_m2 = 0;
-  estado_m3 = 0;
-  estado_m4 = 0;
-
-
-  posicion_m1 = 0;
-  posicion_m2 = 0;
-  posicion_m3 = 0;
-  posicion_m4 = 0;
+//Motores
+//actuador = Actuador();
+//actuador.InitMotor(1,7,6); //PARAMS (id,E,M)
+//actuador.InitMotor(2,5,4);
+ 
 
   //Servicios rest expuestos en la placa
 
@@ -204,7 +153,7 @@ void setup()
 
   //Sensores
 #if defined (ENABLE_DHT)
-  dht1.begin();
+  
   rest.function("Sensor", Sensor);
 #endif
   //rest.function("IdDispositivo", setIdDispositivo);
@@ -229,8 +178,10 @@ void setup()
   DEBUG_PRINT("Modo Liviano Activado, las funciones no entregan resultados");
 #endif
 
+#if defined(ENABLE_REST_SERVER) ||  defined (ENABLE_REST_CLIENT)
   iniciarEthernet();
   delay(1000);
+#endif
 }
 
 
@@ -246,50 +197,51 @@ void loop()
   //Reportar este dispositivo al master
   if (millis() - lastSuccessfulUploadTimeDevice > updateFrequencyDevice)
   {
-#if defined (ENABLE_REST_CLIENT)
-    subscribirDispositivo(IP);
-#endif
+    #if defined (ENABLE_REST_CLIENT)
+      subscribirDispositivo(IP);
+    #endif
     delay(1000);
   }
 
   //Revisar sensores
-#if defined (ENABLE_DHT)
+  #if defined (ENABLE_DHT)
   if (millis() - lastSuccessfulUploadTime > updateFrequency + 3000UL )
   {
 
     for (int i = 0; i < N_SENSORES; i++) {
 
-      DEBUG_PRINT("Lectura Sensor");
-      String tipo = Sensores[i].substring(0, 3);
-      String idSensor = Sensores[i].substring(3, Sensores[i].length());
+      String tipo = arrSensores[i].GetTipo();
+      String idSensor = (String)arrSensores[i].GetId();
+      char operacion = arrSensores[i].GetOperacion();
 
-      DEBUG_PRINT("tipo Sensor: " + tipo + " ID: "  + idSensor);
+      DEBUG_PRINT("Lectura Sensor tipo: " + tipo + " ID: "  + idSensor);
 
-      actualizarSensores(tipo, idSensor);
+      actualizarSensores(tipo,operacion, idSensor);
 
       delay(1000);
     }
   }
-#endif
+  #endif
 
   //Revisar motores
   if (millis() - lastSuccessfulMotorCheckTime > updateFrequencyMotor)
   {
     //HTTP_DEBUG_PRINT("Entra CehckMotor");
-    RevisarMotores();
+    lastSuccessfulMotorCheckTime = millis();
+    //actuador.RevisarMotores();
     delay(1000);
   }
 
   /* BOMBAS */
   
   //Revisar bombas para ver si estan activas y si llevan mucho tiempo
-  bomba1.Revisar();
-  bomba2.Revisar();
+  //bomba1.Revisar();
+  //bomba2.Revisar();
   
 }
 
 
-
+#if defined(ENABLE_REST_SERVER) ||  defined (ENABLE_REST_CLIENT)
 void iniciarEthernet()
 {
   //Start or restart the Ethernet connection.
@@ -330,6 +282,8 @@ void iniciarEthernet()
 #endif
   DEBUG_PRINT("Servidor corriendo en:  " + IP);
 }
+
+#endif
 
 #if defined(ENABLE_REST_CLIENT)
 //Reportar la IP de este dispositivo al master (raspberry)
@@ -381,11 +335,11 @@ void subscribirDispositivo(String ip) {
     else
     {
 
-#if defined (GENERAL_DEBUG)
-      frecuencia = 60000UL;
-#else
-      frecuencia = 600000UL;
-#endif
+    #if defined (GENERAL_DEBUG)
+          frecuencia = 60000UL;
+    #else
+          frecuencia = 600000UL;
+    #endif
 
 
       SubscripcionOk = false;
@@ -413,109 +367,13 @@ void subscribirDispositivo(String ip) {
 
 #endif
 
-/* CODIGO PARA MANEJO DE BOMBAS */
 
 
-/* CODIGO PARA MANEJO DE MOTORES */
-
-int checkMotor1() {
-
-  //Si estoy levantando el piston y su posicion aun no llega a 100
-  if (estado_m1 != 0)
-  {
-    if (estado_m1 == 1) {
-      if (posicion_m1 < 4) {
-        posicion_m1++;
-
-        DEBUG_PRINT("Posicion M1 : " + (String)posicion_m1);
-
-        for (int value = 0 ; value <= 255; value += 5) {
-
-          digitalWrite(M1, HIGH);
-          analogWrite(E1, value);   //PWM Speed Control
-          delay(30);
-        }
-      }
-      else
-      {
-        detenerMotor("1");
-        DEBUG_PRINT("Detencion de avance Automatica: ");
-      }
-    }
-  }
-
-  if (estado_m1 == 2) {
-    if (posicion_m1 > 0) {
-      posicion_m1--;
-      DEBUG_PRINT("Posicion M1 : " + posicion_m1);
-
-      for (int value = 0 ; value <= 255; value += 5) {
-
-        digitalWrite(M1, LOW);
-        analogWrite(E1, value);   //PWM Speed Control
-        delay(30);
-      }
-    }
-    else
-    {
-      detenerMotor("1");
-      DEBUG_PRINT("Detencion de reotroceso Automatica: ");
-    }
-  }
-
-
-}
-
-int checkMotor2() {
-
-  //Si estoy levantando el piston y su posicion aun no llega a 100
-  if (estado_m2 != 0)
-  {
-    if (estado_m2 == 1 && posicion_m2 < 4) {
-
-      posicion_m2++;
-      DEBUG_PRINT("Posicion M2 : " + posicion_m2);
-
-      for (int value = 0 ; value <= 255; value += 5) {
-
-        digitalWrite(M2, HIGH);
-        analogWrite(E2, value);   //PWM Speed Control
-        delay(30);
-      }
-    }
-
-    if (estado_m2 == 2 && posicion_m2 > 0) {
-
-      posicion_m2--;
-      DEBUG_PRINT("Posicion M2 : " + posicion_m2);
-
-      for (int value = 0 ; value <= 255; value += 5) {
-
-        digitalWrite(M2, LOW);
-        analogWrite(E2, value);   //PWM Speed Control
-        delay(30);
-      }
-    }
-  }
-
-}
-
-int RevisarMotores() {
-
-  unsigned long muestraMedicion = millis();
-
-  checkMotor1();
-  checkMotor2();
-  //checkMotor3();
-  //checkMotor4();
-
-  lastSuccessfulMotorCheckTime = muestraMedicion;
-
-}
+/* Servicio de Motores */
 
 int Motor(String params) {
   String accion = params.substring(0, 1);
-  String idMotor = params.substring(1, (int)params.length());
+  int idMotor = params.substring(1, (int)params.length()).toInt();
   char pBody[2];
   accion.toCharArray(pBody, sizeof(pBody));
   char selector = pBody[0];
@@ -526,27 +384,27 @@ int Motor(String params) {
   switch (selector)
   {
     case 'A':
-      resultado = avanzarMotor(idMotor);
+//      actuador.AvanzarMotor(idMotor);
       break;
 
     case 'R':
-      resultado = retrocederMotor(idMotor);
+  //    actuador.RetrocederMotor(idMotor);
       break;
 
     case 'D':
-      resultado = detenerMotor(idMotor);
+    //  actuador.DetenerMotor(idMotor);
       break;
 
     case 'E':
-      resultado = estadoMotor(idMotor);
+     // resultado = actuador.EstadoMotor(idMotor);
       break;
 
     case 'P':
-      resultado = posicionMotor(idMotor);
+     // resultado = actuador.PosicionMotor(idMotor);
       break;
 
     default:
-      resultado = -1;
+     // resultado = -1;
       DEBUG_PRINT("Llamada a motor con parametro accion incorrecto");
       break;
   }
@@ -555,140 +413,7 @@ int Motor(String params) {
 
 }
 
-int avanzarMotor(String nmotor) {
-  int motor = nmotor.toInt();
-
-  int estado = 1; //Subiendo
-
-  DEBUG_PRINT("AvanzarMotor: " + motor);
-
-  switch (motor) {
-    case 1:
-      estado_m1 = 1;
-      break;
-
-    case 2:
-      estado_m2 = 1;
-      break;
-
-    case 3:
-      estado_m3 = 1;
-      break;
-
-    case 4:
-      estado_m4 = 1;
-      break;
-  }
-
-  return 1;
-
-}
-
-int retrocederMotor(String nmotor) {
-  int motor = nmotor.toInt();
-  int estado; //Subiendo
-
-  switch (motor) {
-    case 1:
-      estado_m1 = 2;
-      break;
-
-    case 2:
-      estado_m2 = 2;
-      break;
-
-    case 3:
-      estado_m3 = 2;
-      break;
-
-    case 4:
-      estado_m4 = 2;
-      break;
-  }
-
-  return 2;
-}
-
-int detenerMotor(String nmotor) {
-  int motor = nmotor.toInt();
-  int estado = 0;
-
-  switch (motor) {
-    case 1:
-      estado_m1 = 0;
-      analogWrite(E1, 0);   //PWM Speed Control
-      break;
-
-    case 2:
-      estado_m2 = 0;
-      analogWrite(E2, 0);   //PWM Speed Control
-      break;
-
-    case 3:
-      estado_m3 = 0;
-      //      analogWrite(E3, 0);   //PWM Speed Control
-      break;
-
-    case 4:
-      estado_m4 = 0;
-      //    analogWrite(E4, 0);   //PWM Speed Control
-      break;
-  }
-
-  return 0;
-}
-
-int estadoMotor(String nmotor) {
-  int motor = nmotor.toInt();
-  int estado = 0;
-
-  switch (motor) {
-    case 1:
-      estado = estado_m1;
-      break;
-
-    case 2:
-      estado = estado_m2;
-      break;
-
-    case 3:
-      estado = estado_m3;
-      break;
-
-    case 4:
-      estado = estado_m4;
-      break;
-  }
-
-  return estado;
-}
-
-int posicionMotor(String nmotor) {
-  int motor = nmotor.toInt();
-  int posicion;
-
-  switch (motor) {
-    case 1:
-      posicion = posicion_m1;
-      break;
-
-    case 2:
-      posicion = posicion_m2;
-      break;
-
-    case 3:
-      posicion = posicion_m3;
-      break;
-
-    case 4:
-      posicion = posicion_m4;
-      break;
-  }
-
-  return posicion;
-}
-
-/* CODIGO PARA MANEJO DE BOMBAS */
+/* Servicio de Bombas */
 
 int Bomba(String params) {
   String accion = params.substring(0, 1);
@@ -708,19 +433,19 @@ int Bomba(String params) {
   int aPin = mapAnalogPin(dPin);
   DEBUG_PRINT("Relay Pin en parametro "  + (String)aPin);
 
-  bomba1.SetId(Id);
-  bomba1.SetPin(aPin);
+  //actuador.SetId(Id);
+  //bomba1.SetPin(aPin);
   
   
   switch (selector)
   {
     case 'E':
-      bomba1.Encender();
+      //actuador.Encender(Id);
       resultado = 1;
       break;
 
     case 'A':
-      bomba1.Apagar();
+      //actuador.Apagar(Id);
       resultado = 0;
       break;
 
@@ -751,7 +476,7 @@ int Relay(String params) {
 
 
   int aPin = mapAnalogPin(dPin);
-DEBUG_PRINT("Relay Pin en parametro "  + (String)aPin);
+  DEBUG_PRINT("Relay Pin en parametro "  + (String)aPin);
 
 
 
@@ -903,7 +628,7 @@ int mapAnalogPin(char Pin) {
 #if defined (ENABLE_DHT)
 
 
-void actualizarSensores(String tipo, String idSensor) {
+void actualizarSensores(String tipo, char accion, String idSensor) {
 
   //restClient.setContentType("application/x-www-form-urlencoded");
   //restClient.setHeader("User-Agent: Arduino/1.0");
@@ -917,12 +642,12 @@ void actualizarSensores(String tipo, String idSensor) {
   String pinSensor;
 
   if (tipo == "DHT") {
-
-
-    String accion = "T";
-    valor = Sensor(accion + idSensor);
+  
+    String accion = (String)accion;
+    //valor = Sensor(accion + idSensor);
+    valor = arrSensores[0].Leer();
   }
-  else if (tipo == "ANA") {
+  else if (tipo == "ANALOGO") {
 
     pinSensor = idSensor;
     valor = analogRead(mapAnalogPinString(pinSensor));
@@ -988,7 +713,7 @@ int Sensor(String params) {
   {
     case 'T':
       // Read temperature as Celsius (the default)
-      t = dht1.readTemperature();
+      t = 22;//dht1.readTemperature();
       if (isnan(t)) { // || isnan(f)) {
         DEBUG_PRINT("Failed to read from DHT sensor!");
         resultado = -1;
@@ -999,7 +724,7 @@ int Sensor(String params) {
     case 'H':
       // Reading temperature or humidity takes about 250 milliseconds!
       // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
-      h = dht1.readHumidity();
+      h = 22;//dht1.readHumidity();
       if (isnan(h)) { // || isnan(f)) {
         DEBUG_PRINT("Failed to read from DHT sensor!");
         resultado - 1;
@@ -1025,6 +750,7 @@ int setIdDispositivo(String idDispositivo) {
   return 1;
 }
 
+#if defined (ENABLE_REST_CLIENT) || defined (ENABLE_REST_SERVER)
 
 char* getIpReadable(IPAddress ipAddress)
 {
@@ -1058,6 +784,7 @@ void manejarErrorConexion() {
   }
 
 }
+#endif
 
 
 

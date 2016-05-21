@@ -29,9 +29,9 @@
     "ping": "^0.1.10",
     "plotly": "1.0.2",
     "restler": "3.2.2",
-    
     "serve-static": "1.9.2",
     "should": "^8.2.2",
+    "socket.io": "^1.4.6",
     "supertest": "^1.2.0",
     "throw.js": "^1.0.0",
     "underscore": "^1.8.3",
