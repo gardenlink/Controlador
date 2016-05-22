@@ -15,7 +15,7 @@
 	//var socket = io.connect('http://localhost:8090');
 	
 	$(function() {
-		var socket = io.connect('http://localhost:8090');
+		var socket = io.connect('http://gardenlink.cl:8090');
 	      var terminal = $('#terminal').terminal(function(command, terminal) {
 	        socket.emit('message', command);
 	      },
