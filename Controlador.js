@@ -181,6 +181,7 @@ app.configure(function() {
   app.use(express.cookieParser());
   app.use(express.bodyParser());
   app.use(express.methodOverride());
+  app.use(allowCrossDomain);  //CORS 
   app.use(express.session({ secret: 'keyboard cat' }));
   // Initialize Passport!  Also use passport.session() middleware, to support
   // persistent login sessions (recommended).
