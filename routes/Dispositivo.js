@@ -31,6 +31,53 @@ app.get('/api/dispositivos/:id', function (request, response) {
     });
 });
 
+app.get('/api/dispositivos/:id/sensores', function (request, response) {
+    var dispositivo = request.params.id;
+
+     var filter = {IdDispositivo : String};
+    filter.IdDispositivo = dispositivo;
+    dataProvider.Sensor().GetCollection(filter, function(err, data) { 
+      if (data) {
+        response.send(data);
+      }
+      else
+      {
+      	response.send("");
+      }
+    });
+});
+
+app.get('/api/dispositivos/:id/relays', function (request, response) {
+    var dispositivo = request.params.id;
+
+     var filter = {IdDispositivo : String};
+    filter.IdDispositivo = dispositivo;
+    dataProvider.Relay().GetCollection(filter, function(err, data) { 
+      if (data) {
+        response.send(data);
+      }
+      else
+      {
+      	response.send("");
+      }
+    });
+});
+
+app.get('/api/dispositivos/:id/motores', function (request, response) {
+    var dispositivo = request.params.id;
+
+     var filter = {IdDispositivo : String};
+    filter.IdDispositivo = dispositivo;
+    dataProvider.Motores().GetCollection(filter, function(err, data) { 
+      if (data) {
+        response.send(data);
+      }
+      else
+      {
+      	response.send("");
+      }
+    });
+});
 
 /**
  * @api {get} /api/dispositivos Obtiene el listado de dispositivos

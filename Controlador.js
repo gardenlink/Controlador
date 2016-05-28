@@ -266,6 +266,10 @@ console.log("./routes/Console");
 logger.info("./routes/Console");
 require('./routes/Console.js')(app);
 
+console.log("./routes/Servicio");
+logger.info("./routes/Servicio");
+require('./routes/Servicio.js')(app, moment, dataProvider,serviceProvider, logger);
+
 
 
 
