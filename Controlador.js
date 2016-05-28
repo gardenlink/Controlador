@@ -171,6 +171,27 @@ logger.info("Fin Configuracion Modulo Monitorizacion de Salud...");
 console.log("Configurando Express..");
 
 
+
+
+console.log("Configurando CORS..");
+logger.info("Configurando CORS..");
+
+var allowCrossDomain = function(req, res, next) {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+    res.header('Access-Control-Allow-Headers', 'Content-Type');
+
+    next();
+}
+/*
+// CORS header securiy
+	app.all('/*', function (req, res, next) {
+	  res.header("Access-Control-Allow-Origin", "*");
+	   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
+	  res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
+	  next();
+	});
+*/
 app.configure(function() {
   app.set('views', __dirname + '/views');
   app.set("view options", {layout: false}); // disable layout
@@ -192,15 +213,7 @@ app.configure(function() {
   
 });
 
-console.log("Configurando CORS..");
-logger.info("Configurando CORS..");
-// CORS header securiy
-	app.all('/*', function (req, res, next) {
-	  res.header("Access-Control-Allow-Origin", "*");
-	   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-	  res.header("Access-Control-Allow-Headers", "X-Requested-With, Content-Type");
-	  next();
-	});
+
 
 //Graficos
 console.log("Configurando Libreria para graficos");
