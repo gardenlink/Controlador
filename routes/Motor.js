@@ -181,8 +181,29 @@ app.patch('/api/motores/:id', function(request, response) {
 	
 });
 
+
+// Llamada para obtener el ultimo registro
+// http://localhost:9000/api/motores/1/mediciones?last=true&sorttype=_id&sortdirection=desc
+// criteria can be asc, desc, ascending, descending, 1, or -1
+
 app.get('/api/motores/:id/mediciones', function(request, response){
 
+	var  today = moment();
+    yesterday = moment(today).add(-12, 'hours');
+    
+    var returnLast = false;
+    var sortObject= null;
+    
+    if (request.query.last == true || request.query.last == "true"){
+    	console.log("LAST");
+     	returnLast = request.query.last;
+     	
+     	sortObject = {};
+		var stype = request.query.sorttype;
+		var sdir = request.query.sortdirection;
+		sortObject[stype] = sdir;
+    }
+    
 	 var filter = {
 	 			   IdTipoActuador : Number,
 	 			   IdActuador : Number
@@ -192,19 +213,42 @@ app.get('/api/motores/:id/mediciones', function(request, response){
 	 filter.IdTipoActuador = objMedicion.GetTipoActuadorByName(TipoDispositivo);
 	 filter.IdActuador = request.params.id;
 	 
-	 dataProvider.Medicion().GetCollection(filter, function(err, data) { 
+	 
+	 if (returnLast)
+	 {
+	 	filter.sortObject = sortObject ? sortObject : null;
+	 	
+	 	dataProvider.Medicion().GetLast(filter, function(err, data) { 
 	      if (err){
 	      	response.json(err);
 	      }
 	      else
 	      {
-		      if (data.length > 0) {
-		        response.json(data);
-		      }
+	      	console.log(data);
+		    response.json(data);
 		  }
-     });
+     	});
+	 }
+	 else
+	 {
+	 	dataProvider.Medicion().GetCollection(filter, function(err, data) { 
+	      if (err){
+	      	response.json(err);
+	      }
+	      else
+	      {
+		    response.json(data);
+		  }
+     	});
+	 }
+	 
+	 
+	 
      
 });
+
+
+
 
 
 
