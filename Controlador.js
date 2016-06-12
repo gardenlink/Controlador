@@ -177,15 +177,6 @@ console.log("Configurando CORS..");
 logger.info("Configurando CORS..");
 
 
-// CORS header securiy
-	app.all('/', function (req, res, next) {
-	  res.header("Access-Control-Allow-Origin", "*");
-	   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE');
-	  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-	  next();
-	});
-
-
 app.configure(function() {
   app.set('views', __dirname + '/views');
   app.set("view options", {layout: false}); // disable layout
@@ -203,6 +194,7 @@ app.configure(function() {
   app.use(passport.session());
    app.use(function(req, res, next) {
 	  res.header("Access-Control-Allow-Origin", "*");
+	  res.header('Access-Control-Allow-Methods', 'GET,PUT,PATCH,POST,DELETE');
 	  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
 	  next();
   });
@@ -282,7 +274,7 @@ require('./routes/Console.js')(app);
 
 console.log("./routes/Servicio");
 logger.info("./routes/Servicio");
-require('./routes/Servicio.js')(app, moment, dataProvider,serviceProvider, logger);
+require('./routes/Servicio.js')(app, moment, dataProvider,serviceProvider,logger);
 
 
 
@@ -315,6 +307,14 @@ camara.GetStreamUri(function (data) {
 });
 */
 
+//REsu
+
+
+
+
+
+
 app.listen(appPort); 
 console.log('Servidor corriendo en: http://'+IPAddress+':'+appPort+'/');
 logger.info('Servidor corriendo en: http://'+IPAddress+':'+appPort+'/');
+
