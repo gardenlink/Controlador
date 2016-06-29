@@ -13,11 +13,29 @@
         var nga = NgAdminConfigurationProvider;
         // create an admin application
         var admin = nga.application('GardenLink')
-        .baseApiUrl('http://gardenlink.cl:9000/api/')
+          .baseApiUrl('http://gardenlink.cl:9000/api/')
         
         //ESTADOS
         var estados = nga.entity('estados');
         estados.identifier(nga.field('Estado'));
+        
+        
+        var TipoDispositivos = [
+                             { label: 'Arduino UNO', value: 'Arduino UNO' },
+                             { label: 'Arduino MEGA', value: 'Arduino MEGA' },
+                             { label: 'Arduino NANO', value: 'Arduino NANO' },
+                             { label: 'Arduino LEONARDO', value: 'Arduino LEONARDO' }
+                         ];
+        
+        var TipoSensores = [
+							 { label: 'Temperatura', value: 'Temperatura' },
+							 { label: 'Humedad', value: 'Humedad' },
+							 { label: 'Lluvia', value: 'Lluvia' },
+							 { label: 'PH', value: 'PH' },
+							 { label: 'EC', value: 'EC' },
+							 { label: 'Nivel', value: 'Nivel' }
+                           ];
+        
         
         admin.addEntity(estados);
         
@@ -40,14 +58,21 @@
 			 nga.field('Id')
 				.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' }),
 			 nga.field('Nombre'),
-             nga.field('Tipo'),
+             nga.field('Tipo','choice').choices(TipoDispositivos)
+             						   .validation({required : true}),
              nga.field('Ip'),
              nga.field('Puerto')
              	.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' }),
-             nga.field('Habilitado','reference')
-		 		.targetEntity(admin.getEntity('estados'))
-        		.targetField(nga.field('Estado')),
-             nga.field('Estado'),
+             nga.field('Habilitado','choice').choices([
+                                                       { label: 'true', value: true },
+                                                       { label: 'false', value: false }
+                                                   ])
+                                             .validation({required: true}),
+             nga.field('Estado','choice').choices([
+                                                  { label: 'true', value: true },
+                                                  { label: 'false', value: false }
+                                              ])
+                                          .validation({required: true}),
              nga.field('FrecuenciaMuestreo')
              	.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' }),
 			]);
@@ -82,13 +107,26 @@
                                         	.targetField(nga.field('Id')),
                                          nga.field('Descripcion'),
                                          nga.field('MarcaModelo'),
-                                         nga.field('Tipo'),
+                                         nga.field('Tipo','choice').choices([
+                                                                             { label: 'Temperatura', value: 'Temperatura' },
+                                                                             { label: 'Humedad', value : 'Humedad' },
+                                                                             { label: 'PH', value : 'PH' },
+                                                                             { label: 'EC', value : 'EC' },
+                                                                             { label: 'Lluvia', value : 'Lluvia' },
+                                                                             { label: 'Luz', value : 'Luz' }
+                                                                            ]).validation({required : true}),
                                          nga.field('Pin')
                                          	.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' }),
-                                         nga.field('EsPinAnalogo'),
-                                         nga.field('Habilitado', 'reference')
-                                         	.targetEntity(admin.getEntity('estados'))
-                                 			.targetField(nga.field('Estado')),
+                                         nga.field('EsPinAnalogo','choice').choices([
+                                                                                     { label: 'true', value: true },
+                                                                                     { label: 'false', value: false }
+                                                                                 ])
+                                                                            .validation({required: true}),
+                                         nga.field('Habilitado', 'choice').choices([
+                                                                                    { label: 'true', value: true },
+                                                                                    { label: 'false', value: false }
+                                                                                ])
+                                                                          .validation({required: true})
                             			]);
         
         //Update
@@ -125,15 +163,35 @@
                                         	.remoteComplete(true),
                                          nga.field('Descripcion'),
                                          nga.field('MarcaModelo'),
-                                         nga.field('Tipo'),
+                                         nga.field('Tipo','choice').choices([
+                                                                             { label: '2 Relay Shield', value : '2 Relay Shield' },
+                                                                             { label: '4 Relay Shield', value : '4 Relay Shield' },
+                                                                             { label: '8 Relay Shield', value : '8 Relay Shield' },
+                                                                             { label: 'Relay', value : 'Relay' },
+                                                                             { label: 'Otro', value : 'Otro' }
+                                                                             ]),
                                          nga.field('Pin')
                                          	.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' }),
-                                         nga.field('EsPinAnalogo','reference')
-                                         	.targetEntity(admin.getEntity('estados'))
-                                 			.targetField(nga.field('Estado')),
-                                         nga.field('Habilitado'),
-                                         nga.field('Activo'),
-                                         nga.field('EsInverso')
+                                         nga.field('EsPinAnalogo','choice').choices([
+                                                                                     { label: 'true', value: true },
+                                                                                     { label: 'false', value: false }
+                                                                                 ])
+                                                                           .validation({required: true}),
+                                         nga.field('Habilitado','choice').choices([
+                                                                                   { label: 'true', value: true },
+                                                                                   { label: 'false', value: false }
+                                                                               ])
+                                                                         .validation({required: true}),
+                                         nga.field('Activo','choice').choices([
+                                                                               { label: 'true', value: true },
+                                                                               { label: 'false', value: false }
+                                                                           ])
+                                                                      .validation({required: true}),
+                                         nga.field('EsInverso','choice').choices([
+                                                                                  { label: 'true', value: true },
+                                                                                  { label: 'false', value: false }
+                                                                              ])
+                                                                       .validation({required: true})
                             			]);
         
         //Update
@@ -177,14 +235,34 @@
                                          nga.field('Tipo'),
                                          nga.field('Pin')
                                          	.validation({ required: true, pattern: '[0-9\,\-_]{1,20}' }),
-                                         nga.field('EsPinAnalogo'),
-                                         nga.field('Habilitado','reference')
-                                         	.targetEntity(admin.getEntity('estados'))
-                              				.targetField(nga.field('Estado')),
-                                         nga.field('Posicion'),
+                                         nga.field('EsPinAnalogo','choice').choices([
+                                                                                     { label: 'true', value: true },
+                                                                                     { label: 'false', value: false }
+                                                                                 ])
+                                                                           .validation({required: true}),
+                                         nga.field('Habilitado','choice').choices([
+                                                                                   { label: 'true', value: true },
+                                                                                   { label: 'false', value: false }
+                                                                               ])
+                                                                        .validation({required: true}),
+                                         nga.field('Posicion','choice').choices([
+                                                                                 { label: '0%', value: 0 },
+                                                                                 { label: '25%', value: 1 },
+                                                                                 { label: '50%', value: 2 },
+                                                                                 { label: '75%', value: 3 },
+                                                                                 { label: '100%', value: 4 }
+                                                                             ]),
                                          nga.field('DescripcionPosicion'),
-                                         nga.field('Accion'),
-                                         nga.field('Estado')
+                                         nga.field('Accion', 'choice').choices([
+                                                                                { label: 'Detenido', value: 0 },
+                                                                                { label: 'Avanzando', value: 1 },
+                                                                                { label: 'Retrocediendo', value: 2 }
+                                                                            ]),
+                                         nga.field('Estado','choice').choices([
+                                                                               { label: 'true', value: true },
+                                                                               { label: 'false', value: false }
+                                                                           ])
+                                                                     .validation({required: true})
                             			]);
         
         //Update
@@ -254,7 +332,11 @@
                                         nga.field('NumeroDias')
                                         	.validation({ required: true, pattern: '[0-9\.\-_]{1,20}' }),
                                         nga.field('HorasActivacion'),
-                                        nga.field('Habilitado')
+                                        nga.field('Habilitado','choice').choices([
+                                                                                  { label: 'true', value: true },
+                                                                                  { label: 'false', value: false }
+                                                                              ])
+                                                                        .validation({required: true})
                             			]);
         
         //Update

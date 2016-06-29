@@ -1,2 +1,5 @@
 {"IdMotor":1,"IdDispositivo":"002","Descripcion":"Motor Ventana","MarcaModelo":"DF Robot","Tipo":"Dual H Bridge v1.3","Pin":"7,8","EsPinAnalogo":false,"Habilitado":true,"Posicion":0,"DescripcionPosicion":"0%","Accion":"Retrocediendo","Estado":"0","_id":"znbBqWtBM6yRsk3d"}
 {"$$indexCreated":{"fieldName":"IdMotor","unique":true,"sparse":true}}
+{"IdMotor":95,"IdDispositivo":"001","Descripcion":"Unit Test","MarcaModelo":"Marca Unit","Tipo":"1","Pin":999,"EsPinAnalogo":false,"Habilitado":false,"Posicion":1,"DescripcionPosicion":"25%","Accion":1,"Estado":1,"_id":"6wBTfy8rHuJtUYTJ"}
+{"IdMotor":95,"IdDispositivo":"100","Descripcion":"Unit Test","MarcaModelo":"Marca Unit","Tipo":"1","Pin":888,"EsPinAnalogo":false,"Habilitado":false,"Posicion":1,"DescripcionPosicion":"25%","Accion":1,"Estado":1,"_id":"6wBTfy8rHuJtUYTJ"}
+{"$$deleted":true,"_id":"6wBTfy8rHuJtUYTJ"}

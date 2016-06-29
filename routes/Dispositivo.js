@@ -86,7 +86,7 @@ app.get('/api/dispositivos/:id/motores', function (request, response) {
  */
 app.get('/api/dispositivos', function(request, response){
 	 dataProvider.Device().GetAll(function(err, data) { 
-      if (data.length > 0) {
+      if (data && data.length > 0) {
         response.json(data);
       }
       else

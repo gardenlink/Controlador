@@ -1,6 +1,4 @@
-
-    
-    {
+{
     "tipoactuador" : {
             "Temp1" : {
                 "IdTipoActuador" : "1",
@@ -13,10 +11,10 @@
             "Temp3" : {
                  "IdTipoActuador" : "3",
                 "Descripcion" : "MOTOR"
-            }
+            },
             "Temp4" : {
                  "IdTipoActuador" : "4",
                 "Descripcion" : "BOMBA"
             }
         }
-    }
+}

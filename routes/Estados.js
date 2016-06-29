@@ -10,7 +10,7 @@ var lstEstado = [];
 
 function init()
 {
-
+	lstEstado = [];
 	if (lstEstado.length == 0) {
 		var objEstado1 = new Estado();
 		objEstado1.AddEstado(false);
