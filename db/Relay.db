@@ -1,5 +1,2 @@
 {"IdRelay":1,"IdDispositivo":"001","Descripcion":"Bomba","MarcaModelo":"Olimex 4 Relay Shield","Tipo":"Relay Shield","Pin":"1","EsPinAnalogo":false,"Habilitado":true,"EsInverso":false,"_id":"lg8siK4BIOaRICx4"}
 {"$$indexCreated":{"fieldName":"IdRelay","unique":true,"sparse":true}}
-{"IdRelay":1000,"IdDispositivo":"100","Descripcion":"Unit Test","MarcaModelo":"Modelo Unit","Tipo":"Tipo Unit","Pin":1000,"EsPinAnalogo":true,"Habilitado":false,"Activo":false,"EsInverso":false,"_id":"iXVXmiVe3O5dJFYX"}
-{"IdRelay":1000,"IdDispositivo":"100","Descripcion":"Unit Test Edited","MarcaModelo":"Modelo Unit","Tipo":"Tipo Unit","Pin":1001,"EsPinAnalogo":true,"Habilitado":false,"Activo":false,"EsInverso":false,"_id":"iXVXmiVe3O5dJFYX"}
-{"$$deleted":true,"_id":"iXVXmiVe3O5dJFYX"}

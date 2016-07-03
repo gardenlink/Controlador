@@ -37,7 +37,8 @@
     "throw.js": "^1.0.0",
     "underscore": "^1.8.3",
     "unit.js": "^2.0.0",
-    "winston": "0.9.0"
+    "winston": "0.9.0",
+    "grunt-string-replace": "~1.2.1"
   },
   "apidoc": {
     "title": "GardenLink.Controlador",

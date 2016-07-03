@@ -1,6 +1,23 @@
 module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
+        
+        stringreplace: {
+            inline: {
+                files: {
+                  'views/': 'views/**',
+                },
+                options: {
+                  replacements: [
+                    // place files inline example
+                    {
+                      pattern:  'http://gardenlink.cl:9000/api/',
+                      replacement: 'http://localhost:9000/api/'
+                    }
+                  ]
+                }
+              }
+        },
         bower: {
    		 install: {
        		//just run 'grunt bower:install' and you'll see files from your Bower packages in lib directory
@@ -101,27 +118,16 @@ module.exports = function(grunt) {
                     'js/freeboard+plugins.min.js' : [ 'js/freeboard+plugins.js' ]
                 }
             }
-        },
-        'string-replace': {
-            css: {
-                files: {
-                    'css/': 'css/*.css'
-                },
-                options: {
-                    replacements: [{
-                        pattern: /..\/..\/..\/img/ig,
-                        replacement: '../img'
-                    }]
-                }
-            }
         }
+      
     });
-	grunt.loadNpmTasks('grunt-bower-task'); //copio archivos BOWER a la ruta correcta
+    grunt.loadNpmTasks('grunt-string-replace');
+    grunt.loadNpmTasks('grunt-bower-task'); //copio archivos BOWER a la ruta correcta
     //grunt.loadNpmTasks('grunt-contrib-concat');
     //grunt.loadNpmTasks('grunt-contrib-uglify');
     //grunt.loadNpmTasks('grunt-contrib-watch');
     //grunt.loadNpmTasks('grunt-contrib-cssmin');
-    //grunt.loadNpmTasks('grunt-string-replace');
+
     //grunt.registerTask('default', [ 'concat:css', 'cssmin:css', 'concat:fb', 'concat:thirdparty', 'concat:plugins', 'concat:fb+plugins', 'uglify:fb', 'uglify:plugins', 'uglify:fb+plugins', 'uglify:thirdparty', 'string-replace:css' ]);
-    grunt.registerTask('default', [ 'bower' ]);
+    grunt.registerTask('default', [ 'bower','string-replace-local' ]);
 };

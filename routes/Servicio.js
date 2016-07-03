@@ -121,6 +121,21 @@ app.get('/api/v1/servicio/sensores/:id', function(request, response, next){
 		});
 });
 
+app.get('/api/v1/servicio/sensores/:id/mediciones/grafico', function(request, response, next) {
+
+	var  today = moment();
+    yesterday = moment(today).add(-12, 'hours');
+
+   var filter =  {TimeStamp: {
+      $gte: yesterday.toDate(),
+      $lt: today.toDate()},
+      Id : request.params.id
+    };
+
+    //TODO: Implementar filtros en cache
+
+});
+
 app.get('/api/v1/servicio/motores', function(request, response, next){
 
 		dataProvider.Cache(true, function(error, data ) {
@@ -172,18 +187,7 @@ app.patch('/api/v1/servicio/relays/:id', function(request, response) {
 	      					return;
 	      				}
 	      				else {
-		      				dataProvider.Relay().Save(idRelay, 
-		            				 doc.IdDispositivo, 
-		            				 doc.Descripcion, 
-		            				 doc.MarcaModelo, 
-		            				 doc.Tipo, 
-		            				 doc.Pin, 
-		            				 doc.EsPinAnalogo,
-		            				 doc.Habilitado, 
-		            				 doc.Activo,
-		            				 doc.EsInverso);
 		            		
-							console.log("CULO ACTIVO : ");
 							console.dir(doc);			            		
 		            		
 	            		}
@@ -198,21 +202,7 @@ app.patch('/api/v1/servicio/relays/:id', function(request, response) {
 	      					return;
 	      				}
 	      				else {
-	      					dataProvider.Relay().Save(idRelay, 
-	            				 doc.IdDispositivo, 
-	            				 doc.Descripcion, 
-	            				 doc.MarcaModelo, 
-	            				 doc.Tipo, 
-	            				 doc.Pin, 
-	            				 doc.EsPinAnalogo,
-	            				 doc.Habilitado, 
-	            				 doc.Activo,
-	            				 doc.EsInverso);
-	            				 
-	            				 console.log("CULO INACTIVO : ");
 								 console.dir(doc);			  
-	            				 
-	            				 
 	            		}
 	      			}); 
 	      		}
