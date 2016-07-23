@@ -7,8 +7,6 @@
  * Fecha: 15-01-2015
  */
 
-
-
 var express = require('express');
 var app = express();
 var os=require('os');
@@ -18,8 +16,8 @@ var winston     = require ('winston');
 var path        = require ('path'); //para utilizar rutas
 var fs = require('fs'); //leer desde el filesystem
 //Autenticacion
-var passport = require('passport')
-var util = require('util')
+var passport = require('passport');
+var util = require('util');
 var TwitterStrategy = require('passport-twitter').Strategy;
 
 
@@ -59,8 +57,9 @@ try {
 }
 console.log("Carpetas de sistema ok..");
 
-console.log("Leyendo Configuracion... ");
+console.log("Leyendo Configuracion...");
 logger.info("Leyendo Configuracion...");
+
 if (environment != 'release' && environment != 'debug')
 {
   console.log("Ambiente especificado invalido.. se usara configuracion por defecto");
@@ -106,7 +105,7 @@ var dataProvider = new DataProvider(logger, config, null);
 
 //Servicios
 var SS = require('./lib/servicios/ServiceProvider.js');
-var serviceProvider = new SS(dataProvider, logger, function(err, data){ });
+var serviceProvider = new SS(dataProvider, config, logger, function(err, data){ });
 
 
 console.log("GardenLink Host: " + appHost);

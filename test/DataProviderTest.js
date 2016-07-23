@@ -143,6 +143,20 @@ describe('****** Data Provider *********', function() {
     
     });
     
+    describe('#Relay-GetLast', function() {
+    it('should return the maximum value', function(done) {
+	    	var filter = {IdRelay : String, IdDispositivo : String};
+		    
+		    dataProvider.Relay().GetLast(filter, function(err, data) { 
+		        should.not.exist(err);
+		        should.exist(data);
+		        data.should.not.equal(null);
+		        console.dir(data);
+		        done();
+		    });    	
+        });
+     });
+    
     describe('#Relay-Save', function() {
     it('should insert 1 value', function(done) {
 	    	
