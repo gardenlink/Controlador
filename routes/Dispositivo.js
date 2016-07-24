@@ -210,6 +210,25 @@ app.get('/api/dispositivos/:id/ping', function(request, response) {
 });
 
 
+app.get('/api/v1/servicio/dispositivos', function(request, response, next){
+
+		dataProvider.Cache(true, function(error, data ) {
+				var result = data["Dispositivos"];
+				response.json(result);
+			});
+});
+
+app.get('/api/v1/servicio/dispositivos/:id', function(request, response, next){
+		var id = request.params.id;
+		dataProvider.Cache(true, function(error, data ) {
+				var result = _.find(data.Dispositivos, function(element) {
+					return element.Id == id;
+				}); 
+				response.json(result);
+			});
+});
+
+
 
 
 };

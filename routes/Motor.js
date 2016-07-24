@@ -85,101 +85,190 @@ app.delete('/api/motores/:id', function(request, response){
 	response.json("ok");
 });
 
-app.patch('/api/motores/:id', function(request, response) {
+
+/****
+* Desde POSTMAN enviar sin comillas
+* path = Accion
+* valor = AVANZAR, RETROCEDER, DETENER, ESTADO, POSICION
+*/
+app.patch('/api/v1/servicio/motores/:id', function(request, response,next) {
 	var idMotor = request.params.id;
     var op = request.body.op; //solamente replace por ahora 
     var path = request.body.path; //debe venir sin comillas
     var valor = request.body.value;
     
-
-	var filter = {IdMotor : String};
-    filter.IdMotor = idMotor;
-    dataProvider.Motor().Find(filter, function(err, data) { 
-      if (data) {
-      	
-      	
-      	//Si el cambio es para manipular el estado del motor, llamo al servicio de Arduino
-      	if (path == "Accion") {
-      		//var activo = helper.toBoolean(valor);
-      		
-      		
-      			console.log("PATCH: /api/motores/id --> path : " + path + " valor de parametro : " + valor);
-      			
-      			
-      			serviceProvider.Motor().ReporteMotor(data.IdDispositivo, data.IdMotor, function(error, data) {
-      			
-      			  	if (error)
-		            {
-		                logger.error("MonitorSalud.Motor(): Error al verificar Motor, detalle: " + error);
-		                console.log("MonitorSalud.Motor(): Error al verificar Motor, detalle: " + error);
-		                response.json(error);
-		            }
-		            else
-		            {
-		            
-		            switch (valor)
-	      			{
-	      				case "Avanzar":
-	      					serviceProvider.Motor().Avanzar(data.IdDispositivo, data.IdMotor, function(error, data) {});
-	      					break;
-	      				
-	      				case "Retroceder":
-	      					serviceProvider.Motor().Retroceder(data.IdDispositivo, data.IdMotor, function(error, data) {});
-	      					break;
-	      				
-	      				case "Detener":
-	      					serviceProvider.Motor().Detener(data.IdDispositivo, data.IdMotor, function(error, data) {});
-	      					break;
-	      				case "Estado":
-	      					serviceProvider.Motor().Estado(data.IdDispositivo, data.IdMotor, function(error, data) {});
-	      					break;
-	      				
-	      				case "Posicion":
-	      					serviceProvider.Motor().Posicion(data.IdDispositivo, data.IdMotor, function(error, data) {});
-	      					break;
-	      			}
-		            
-		              //TODO: agregar atributo IdTipoActuador en dto Sensor
-		              
-		              //Campo modificado
-      				  data[path] = valor;
-      	
-      	
-		              dataProvider.Motor().Save( 
-		              		data.IdMotor
-						  , data.IdDispositivo
-						  , data.Descripcion
-						  , data.MarcaModelo
-						  , data.Tipo
-						  , data.Pin
-						  , data.EsPinAnalogo
-						  , data.Habilitado
-						  , data.Posicion
-						  , data.Accion
-						  , data.Estado); //TODO: Revisar por que puede ir undefined
-						  
-					  dataProvider.Medicion().Save(
-					  	3,
-					  	data.IdMotor, 
-					  	data.IdDispositivo,
-					  	data.Posicion
-					  );
-		              
-		            }
-		            
-		            response.json(data);
-
-      			});
-        
-      }
-      else
-      {
-      	response.send("");
-      }
-    }
-    });
 	
+    
+    dataProvider.Cache(true, function(error, data ) {
+    
+    		if (error) { 
+    			return;
+    		}
+    			
+			var result = _.find(data.Motores, function (item) {
+				return item.IdMotor == idMotor;
+			});
+		
+			if (result) {
+				
+			data[path] = valor;
+      		//Si el cambio es para activar o desactivar el RElay, llamo al servicio de Arduino
+	      	if (path == "Accion") {
+	      		//var activo = helper.toBoolean(valor);
+	      		
+	      		
+	      		if (_DEBUG)
+	      			console.log("ServicioController: valor de variable Accion : " + valor);
+	      		
+	      		switch (valor)
+	      		{
+	      			case "AVANZAR":
+	      				console.log("llegacontroller");
+			      		serviceProvider.Motor().Avanzar(result.IdDispositivo, result.IdMotor, function (error, doc) {
+			      				if (error) {
+			      					console.log("[PATCH] /api/relays/Error all lamar a servicio Arduino para Relays -> error :  ", error);
+			      					return;
+			      				}
+			      				else {
+									return response.json(doc);
+			            		}
+			      			}); 
+			      		
+			      		break;
+			      		
+			      	case "RETROCEDER":
+			      		serviceProvider.Motor().Retroceder(result.IdDispositivo, result.IdMotor, function (error, doc) {
+			      				if (error) {
+			      					console.log("[PATCH] /api/relays/Error all lamar a servicio Arduino para Relays -> error :  ", error);
+			      					return;
+			      				}
+			      				else {
+									return response.json(doc);
+			            		}
+			      			}); 
+			      		
+			      		break;
+			      		
+			      	case "DETENER":
+			      		serviceProvider.Motor().Detener(result.IdDispositivo, result.IdMotor, function (error, doc) {
+			      				if (error) {
+			      					console.log("[PATCH] /api/relays/Error all lamar a servicio Arduino para Relays -> error :  ", error);
+			      					return;
+			      				}
+			      				else {
+									return response.json(doc);
+			            		}
+			      			}); 
+			      		
+			      		break;
+			      		
+			      	case "ESTADO":
+			      		serviceProvider.Motor().Estado(result.IdDispositivo, result.IdMotor, function (error, doc) {
+			      				if (error) {
+			      					console.log("[PATCH] /api/relays/Error all lamar a servicio Arduino para Relays -> error :  ", error);
+			      					return;
+			      				}
+			      				else {
+									return response.json(doc);
+			            		}
+			      			}); 
+			      		
+			      		break;
+			      		
+			      	case "POSICION":
+			      		serviceProvider.Motor().Posicion(result.IdDispositivo, result.IdMotor, function (error, doc) {
+			      				if (error) {
+			      					console.log("[PATCH] /api/relays/Error all lamar a servicio Arduino para Relays -> error :  ", error);
+			      					return;
+			      				}
+			      				else {
+									return response.json(doc);
+			            		}
+			      			}); 
+			      		
+			      		break;
+			      		
+			      	default:
+						console.log("El valor del atributo Accion no es valido");
+						return response.json("El valor del atributo Accion no es valido");
+						break;
+
+	      		}
+	      		
+			}
+			else
+			{
+				console.log("El path no es accion");
+				return response.json("El path no es accion");
+			}
+		}
+		else
+		{
+			console.log("No llega resultado desde bd");
+			return response.json("No llega resultado desde bd");
+		}
+	});
+
 });
+
+app.get('/api/v1/servicio/motores', function(request, response, next){
+
+		dataProvider.Cache(true, function(error, data ) {
+				var result = data["Motores"];
+				response.json(result);
+			});
+});
+
+app.get('/api/v1/servicio/motores/:id', function(request, response, next){
+		var id = request.params.id;
+		dataProvider.Cache(true, function(error, data ) {
+				var result = _.find(data.Motores, function(element) {
+					return element.IdMotor == id;
+				}); 
+				response.json(result);
+			});
+});
+
+app.get('/api/v1/servicio/sensores/:id', function(request, response, next){
+		var id = request.params.id;
+			
+		dataProvider.Cache(true, function(error, data ) {
+			var result = _.find(data.Sensores, function (item) {
+				return item.IdSensor == id;
+			});
+			if (result) {
+				
+				
+				serviceProvider.Sensor().Leer(result.IdDispositivo, result.IdSensor, result.Tipo, function (error, doc) {
+	      				if (error) {
+	      					console.log("[GET] /api/v1/servicio/sensores/:id -> Error all lamar a servicio Arduino para Sensores -> error :  ", error);
+	      					return;
+	      				}
+	      				else {
+							return response.json(doc);
+	            		}
+	      			}); 
+				
+				/*
+				//Obtengo detalle de sensor
+				var url = "http://localhost:9000/api/sensores/" + result.IdSensor + "/mediciones?last=true&sorttype=TimeStamp&sortdirection=desc"
+				req.get(url).on('complete', function(data) {
+			    	result.UltimaMedicion = data;
+					response.json(result);    	
+			    }).on('error', function(error, response) { 
+			    	console.log("Servicio -> Error: " + error);
+			    	response.json(error);
+			    });
+			    */
+			}
+			else
+			{
+				response.json("");
+			}
+			
+		});
+});
+
 
 
 // Llamada para obtener el ultimo registro

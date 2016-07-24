@@ -158,8 +158,6 @@ app.get('/api/sensores/:id/mediciones/:id', function(request, response){
 });
 
 
-
-
 app.post('/api/sensores/mediciones',function(request, response) {
 
     dataProvider.Medicion().Save(objMedicion.GetTipoActuadorByName(TipoDispositivo), 
@@ -173,54 +171,62 @@ app.post('/api/sensores/mediciones',function(request, response) {
 
 
 
-app.get('/api/sensores/:id/temperatura', function(request, response) {
-	
-	 var idSensor = request.params.id;
-	 var respuesta;
 
-     var filter = {IdSensor : String};
-     filter.IdSensor = idSensor;
-     dataProvider.Sensor().Find(filter, function(err, data) { 
-	      if (data) {
-	        sensorService.GetTemperatura(data.IdDispositivo, data.IdSensor, function(error, res) {
-	        	if (error) {
-	        		console.dir("error: /api/sensores/:id/temperatura -> detalle : " + error);
-	        	} else
-	        	{
-		        	response.json(res);
-	        	}
-	        });
-	      }
-	      else
-	      {
-	      	response.send("");
-	      }
-     });
-	
+app.get('/api/v1/servicio/sensores/:id', function(request, response, next){
+		var id = request.params.id;
+			
+		dataProvider.Cache(true, function(error, data ) {
+			var result = _.find(data.Sensores, function (item) {
+				return item.IdSensor == id;
+			});
+			if (result) {
+				
+				
+				serviceProvider.Sensor().Leer(result.IdDispositivo, result.IdSensor, result.Tipo, function (error, doc) {
+	      				if (error) {
+	      					console.log("[GET] /api/v1/servicio/sensores/:id -> Error all lamar a servicio Arduino para Sensores -> error :  ", error);
+	      					return;
+	      				}
+	      				else {
+							return response.json(doc);
+	            		}
+	      			}); 
+				
+				/*
+				//Obtengo detalle de sensor
+				var url = "http://localhost:9000/api/sensores/" + result.IdSensor + "/mediciones?last=true&sorttype=TimeStamp&sortdirection=desc"
+				req.get(url).on('complete', function(data) {
+			    	result.UltimaMedicion = data;
+					response.json(result);    	
+			    }).on('error', function(error, response) { 
+			    	console.log("Servicio -> Error: " + error);
+			    	response.json(error);
+			    });
+			    */
+			}
+			else
+			{
+				response.json("");
+			}
+			
+		});
 });
 
-app.get('/api/sensores/:id/lectura', function(request, response) {
-	
-	 var idSensor = request.params.id;
-	 var respuesta;
+app.get('/api/v1/servicio/sensores/:id/mediciones/grafico', function(request, response, next) {
 
-     var filter = {IdSensor : String};
-     filter.IdSensor = idSensor;
-     dataProvider.Sensor().Find(filter, function(err, data) { 
-	      if (data) {
-	        sensorService.LeerSensor(data.IdDispositivo, data.IdSensor, function(error, res) {
-	        	response.json(res);
-	        });
-	      }
-	      else
-	      {
-	      	response.send("");
-	      }
-     });
-     
-     
-	
+	var  today = moment();
+    yesterday = moment(today).add(-12, 'hours');
+
+   var filter =  {TimeStamp: {
+      $gte: yesterday.toDate(),
+      $lt: today.toDate()},
+      Id : request.params.id
+    };
+
+    //TODO: Implementar filtros en cache
+
 });
+
 
 
 

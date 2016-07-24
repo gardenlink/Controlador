@@ -23,7 +23,7 @@ module.exports = function(app, auxiliares, logger, tareas,fs, dirname) {
  *     HTTP/1.1 404 Not Found
  *     
  */
-app.get('/log/:id', function (request, response) {
+app.get('/logs/:id', function (request, response) {
     var idLog = request.params.id;
     try {
       
