@@ -10,6 +10,10 @@ var _DEBUG = true;
 var Medicion = require("../lib/dto/Medicion.js");
 var objMedicion = new Medicion();
 
+var req = require('restler');
+var async = require('async');
+var _ = require('underscore');
+
 var TipoDispositivo = "RELAY";
 
 /* INICIO API REST */

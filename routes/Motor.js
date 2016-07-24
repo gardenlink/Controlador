@@ -3,6 +3,10 @@ module.exports = function(app, moment, dataProvider, serviceProvider, logger) {
 
 var _ = require('underscore');
 
+var req = require('restler');
+var async = require('async');
+
+
 var Medicion = require("../lib/dto/Medicion.js");
 var objMedicion = new Medicion();
 
@@ -227,46 +231,6 @@ app.get('/api/v1/servicio/motores/:id', function(request, response, next){
 				}); 
 				response.json(result);
 			});
-});
-
-app.get('/api/v1/servicio/sensores/:id', function(request, response, next){
-		var id = request.params.id;
-			
-		dataProvider.Cache(true, function(error, data ) {
-			var result = _.find(data.Sensores, function (item) {
-				return item.IdSensor == id;
-			});
-			if (result) {
-				
-				
-				serviceProvider.Sensor().Leer(result.IdDispositivo, result.IdSensor, result.Tipo, function (error, doc) {
-	      				if (error) {
-	      					console.log("[GET] /api/v1/servicio/sensores/:id -> Error all lamar a servicio Arduino para Sensores -> error :  ", error);
-	      					return;
-	      				}
-	      				else {
-							return response.json(doc);
-	            		}
-	      			}); 
-				
-				/*
-				//Obtengo detalle de sensor
-				var url = "http://localhost:9000/api/sensores/" + result.IdSensor + "/mediciones?last=true&sorttype=TimeStamp&sortdirection=desc"
-				req.get(url).on('complete', function(data) {
-			    	result.UltimaMedicion = data;
-					response.json(result);    	
-			    }).on('error', function(error, response) { 
-			    	console.log("Servicio -> Error: " + error);
-			    	response.json(error);
-			    });
-			    */
-			}
-			else
-			{
-				response.json("");
-			}
-			
-		});
 });
 
 

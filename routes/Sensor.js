@@ -5,6 +5,10 @@ var objMedicion = new Medicion();
 
 var TipoDispositivo = "SENSOR";
 
+var req = require('restler');
+var async = require('async');
+var _ = require('underscore');
+
 
 var sensorService = serviceProvider.Sensor();
 

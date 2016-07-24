@@ -2,7 +2,11 @@ module.exports = function(app, moment, dataProvider, logger){
 
 var ArestLibrary = require("../lib/servicios/Arest.js");
 var NetworkingLibrary = require("../lib/util/Net.js");
-var arduinoService; 
+var arduinoService;
+
+var req = require('restler');
+var async = require('async');
+var _ = require('underscore'); 
 
 
 
