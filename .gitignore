@@ -32,6 +32,9 @@ node_modules
 /*.env
 *.env
 
+#Excluir archivos de base de datis
+*.db
+
 # Users Environment Variables
 .lock-wscript
 
